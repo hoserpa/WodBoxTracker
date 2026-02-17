@@ -145,7 +145,10 @@ La app está diseñada principalmente para **uso móvil** durante el entrenamien
 ## Viewport
 
 ```html
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+/>
 ```
 
 ## Backend como Servicio (BaaS)
@@ -326,13 +329,19 @@ npm run lint         # Ejecutar linter (ESLint)
 npm run lint:fix     # Ejecutar linter y corregir errores automáticamente
 ```
 
-## Testing (Vitest)
+Currently **no test framework is installed**. To add testing, install Vitest:
 
 ```bash
-npm run test               # Ejecutar todos los tests
-npm run test:watch        # Ejecutar tests en modo watch
-npm run test:coverage     # Ejecutar tests con coverage
-npm run test:single <file> # Ejecutar un solo archivo de test
+npm install -D vitest
+```
+
+Then add to package.json scripts:
+
+```json
+"test": "vitest",
+"test:watch": "vitest --watch",
+"test:coverage": "vitest --coverage",
+"test:single": "vitest run"
 ```
 
 ---
@@ -343,8 +352,8 @@ npm run test:single <file> # Ejecutar un solo archivo de test
 
 - **Linter**: ESLint con configuración Vue 3
 - **Formatter**: Prettier integrado con ESLint
-- **Testing**: Vitest
-- **TypeScript**: Configuración Strict
+- **Language**: JavaScript (no TypeScript)
+- **Testing**: Vitest (pendiente de instalar si se requiere)
 
 ## Imports
 
@@ -352,93 +361,143 @@ npm run test:single <file> # Ejecutar un solo archivo de test
 - Agrupar imports en orden: Vue imports → Bibliotecas externas → Componentes internos → Utilidades
 - Preferir imports con nombre en lugar de default exports
 
-```jsx
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { supabase } from '@/lib/supabase'
-import { formatDate } from '@/utils/date'
-import ExerciseCard from '@/components/ExerciseCard.vue'
+```javascript
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { supabase } from "@/lib/supabase";
+import { useAuthStore } from "@/stores/auth";
+import { rutinaService } from "@/services/rutina";
+import ExerciseCard from "@/components/ExerciseCard.vue";
 ```
 
 ## Formato y Estructura
 
 - Usar **Composition API** con `<script setup>`
 - 2 espacios para indentación
-- Punto y coma al final deStatements
+- Punto y coma al final de statements
 - Comillas simples para strings
 - Una línea en blanco entre imports y resto del código
+- Componentes Vue en Single File Component (.vue)
 
 ## Nombramiento
 
 - **Componentes**: PascalCase (`ExerciseCard.vue`, `WeightInput.vue`)
-- **Utilidades/Composables**: camelCase con prefijo `use` (`useAuth.js`, `useWorkoutStore.js`)
+- **Stores/Composables**: camelCase con prefijo `use` (`useAuthStore.js`, `useWorkoutStore.js`)
+- **Servicios**: camelCase sin prefijo (`rutinaService.js`, `diaService.js`)
 - **Constantes**: SCREAMING_SNAKE_CASE
-- **Props**: camelCase, usar TypeScript types cuando sea posible
-- **Eventos**: kebab-case (emitir) / camelCase (manejar)
+- **Props/Variables**: camelCase
 
-```jsx
-// Componente
-const props = defineProps<{
-  exerciseName: string
-  sets: number
-}>()
+## JavaScript
 
-const emit = defineEmits<{
-  (e: 'weight-updated', weight: number): void
-}>()
-```
+- Usar JSDoc para documentar funciones y tipos cuando sea necesario
+- Preferir `const` sobre `let`, evitar `var`
+- Usar async/await para operaciones asíncronas
+- Usar arrow functions cuando no se necesita `this`
 
-## TypeScript
+```javascript
+/**
+ * Get all routines for the current user
+ * @returns {Promise<Array>}
+ */
+async function getAll() {
+  const { data, error } = await supabase
+    .from("rutinas")
+    .select("*")
+    .order("id");
 
-- Usar **TypeScript** en todos los archivos nuevos
-- Definir interfaces/types para datos de Supabase
-- Usar `type` para tipos unions/aliases, `interface` para objetos
-
-```typescript
-interface WorkoutExercise {
-  id: string
-  name: string
-  sets: number
-  reps: number
-  weight?: number
+  if (error) throw error;
+  return data;
 }
 
-type WorkoutDay = 'A' | 'B' | 'C'
+export const rutinaService = {
+  getAll,
+  async getById(id) {
+    const { data, error } = await supabase
+      .from("rutinas")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+};
 ```
 
 ## Manejo de Errores
 
 - Usar try/catch con mensajes descriptivos para operaciones async
-- Mostrar feedback al usuario mediante toast/notifications
+- Mostrar feedback al usuario mediante UI errors
 - No exponer errores técnicos sensibles al usuario
+- Manejar siempre el `error` de Supabase
 
-```typescript
-async function saveWeight(exerciseId: string, weight: number) {
+```javascript
+const loadRutinas = async () => {
   try {
-    const { error } = await supabase
-      .from('registros')
-      .insert({ ejercicio_id: exerciseId, peso: weight })
-    
-    if (error) throw error
-    
-    showSuccess('Peso guardado correctamente')
-  } catch (error) {
-    console.error('Error guardando peso:', error)
-    showError('No se pudo guardar el peso')
+    loading.value = true;
+    error.value = "";
+    rutinas.value = await rutinaService.getAll();
+  } catch (err) {
+    error.value = "Error al cargar rutinas";
+    console.error(err);
+  } finally {
+    loading.value = false;
   }
-}
+};
 ```
 
 ## Vue Components
 
-- Props con defaults usando factory function para objetos/arrays
-- Usar `v-model` con `.trim` y `.number` modifiers cuando corresponda
-- Componentes pequeños y reutilizables (máximo ~200 líneas)
-- Separar lógica compleja en composables
+- Usar `<script setup>` para Composition API
+- Usar `defineProps` y `defineEmits` con la sintaxis de objeto
+- Componentes pequeños y reutilizables
+- Separar lógica compleja en stores o composables
+
+```vue
+<script setup>
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
+
+const props = defineProps({
+  routineId: {
+    type: String,
+    required: true,
+  },
+});
+
+const emit = defineEmits(["update", "delete"]);
+
+const router = useRouter();
+const isLoading = ref(false);
+</script>
+
+<template>
+  <div class="component-class">
+    <!-- template content -->
+  </div>
+</template>
+```
 
 ## Supabase
 
 - Siempre manejar el caso de sesión null
 - Usar Row Level Security en todas las tablas
 - Validar datos antes de enviar a Supabase
-- Preferir consultas tipadas con TypeScript
+- Usar destructuring para obtener `data` y `error` de respuestas
+
+```javascript
+const { data, error } = await supabase
+  .from("table")
+  .select("columns")
+  .eq("field", value);
+
+if (error) throw error;
+return data;
+```
+
+## Tailwind CSS
+
+- Usar clases utility de Tailwind para estilos
+- Preferir clases mobile-first (`w-full`, `p-4`, etc.)
+- Usar `max-w-` para limitar ancho en desktop
+- Mantener consistencia con spacing y colores

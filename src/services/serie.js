@@ -9,6 +9,7 @@ export const serieService = {
         ejercicio:ejercicios(nombre, tipo_id)
       `)
       .eq('dia_id', diaId)
+      .order('tipo_ejercicio', { ascending: true })
       .order('orden')
     
     if (error) throw error
