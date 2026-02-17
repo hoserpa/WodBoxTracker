@@ -7,6 +7,19 @@ export default [
   ...pluginVue.configs['flat/essential'],
   skipFormatting,
   {
+    languageOptions: {
+      globals: {
+        console: 'readonly',
+        window: 'readonly',
+        document: 'readonly',
+        localStorage: 'readonly',
+        fetch: 'readonly',
+        FormData: 'readonly',
+        URLSearchParams: 'readonly',
+      },
+    },
+  },
+  {
     rules: {
       'vue/multi-word-component-names': 'off',
       'no-unused-vars': 'warn',

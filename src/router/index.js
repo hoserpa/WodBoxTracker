@@ -13,9 +13,21 @@ const routes = [
     component: () => import('@/views/LoginView.vue'),
   },
   {
+    path: '/rutina/:rutinaId',
+    name: 'Rutina',
+    component: () => import('@/views/RutinaView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/rutina/:rutinaId/semana/:semanaId',
-    name: 'Workout',
-    component: () => import('@/views/WorkoutView.vue'),
+    name: 'Semana',
+    component: () => import('@/views/SemanaView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/rutina/:rutinaId/semana/:semanaId/dia/:diaId',
+    name: 'Dia',
+    component: () => import('@/views/DiaView.vue'),
     meta: { requiresAuth: true },
   },
 ]
