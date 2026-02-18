@@ -27,7 +27,8 @@ CREATE TABLE IF NOT EXISTS tipos_ejercicio (
 CREATE TABLE IF NOT EXISTS ejercicios (
   id SERIAL PRIMARY KEY,
   nombre TEXT NOT NULL UNIQUE,
-  tipo_id INTEGER REFERENCES tipos_ejercicio(id)
+  tipo_id INTEGER REFERENCES tipos_ejercicio(id),
+  url TEXT
 );
 
 -- ============================================
@@ -98,6 +99,20 @@ CREATE TABLE IF NOT EXISTS registros (
   peso NUMERIC(6, 2),
   fecha DATE DEFAULT CURRENT_DATE,
   created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================
+-- DIAS COMPLETADOS (Day completion tracking - user specific)
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS dias_completados (
+  id SERIAL PRIMARY KEY,
+  dia_id INTEGER NOT NULL REFERENCES dias(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES auth.users(id) DEFAULT auth.uid(),
+  completado BOOLEAN DEFAULT TRUE,
+  fecha DATE DEFAULT CURRENT_DATE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(dia_id, user_id)
 );
 
 -- ============================================
@@ -428,6 +443,28 @@ CREATE POLICY "Users can delete their own registros" ON registros
   FOR DELETE USING (auth.uid() = user_id);
 
 -- ============================================
+-- RLS POLICIES FOR DIAS_COMPLETADOS
+-- ============================================
+
+ALTER TABLE dias_completados ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can read their own dias_completados" ON dias_completados;
+CREATE POLICY "Users can read their own dias_completados" ON dias_completados
+  FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert their own dias_completados" ON dias_completados;
+CREATE POLICY "Users can insert their own dias_completados" ON dias_completados
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update their own dias_completados" ON dias_completados;
+CREATE POLICY "Users can update their own dias_completados" ON dias_completados
+  FOR UPDATE USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can delete their own dias_completados" ON dias_completados;
+CREATE POLICY "Users can delete their own dias_completados" ON dias_completados
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- ============================================
 -- INDEXES FOR PERFORMANCE
 -- ============================================
 
@@ -437,3 +474,5 @@ CREATE INDEX IF NOT EXISTS idx_series_dia ON series(dia_id);
 CREATE INDEX IF NOT EXISTS idx_series_ejercicio ON series(ejercicio_id);
 CREATE INDEX IF NOT EXISTS idx_registros_serie ON registros(serie_id);
 CREATE INDEX IF NOT EXISTS idx_registros_user ON registros(user_id);
+CREATE INDEX IF NOT EXISTS idx_dias_completados_dia ON dias_completados(dia_id);
+CREATE INDEX IF NOT EXISTS idx_dias_completados_user ON dias_completados(user_id);

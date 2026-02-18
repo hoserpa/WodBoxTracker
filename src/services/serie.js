@@ -14,7 +14,7 @@ export const serieService = {
     const ejercicioIds = [...new Set(data.map((s) => s.ejercicio_id))];
     const { data: ejercicios } = await supabase
       .from("ejercicios")
-      .select("id, nombre")
+      .select("id, nombre, url")
       .in("id", ejercicioIds);
 
     const ejercicioMap = {};

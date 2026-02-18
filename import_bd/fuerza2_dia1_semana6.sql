@@ -7,12 +7,12 @@ DELETE FROM series WHERE dia_id = 42;
 -- ============================================
 
 INSERT INTO series (dia_id, ejercicio_id, series, repeticiones, tipo_ejercicio, orden) VALUES
-(42, 7, 2, '10', 'calentamiento', 1),
-(42, 8, 2, '10', 'calentamiento', 2),
-(42, 9, 2, '15"', 'calentamiento', 3),
-(42, 10, 2, '10', 'calentamiento', 4),
-(42, 11, 2, '10', 'calentamiento', 5),
-(42, 2, 2, '10', 'calentamiento', 6),
+(42, 2, 2, '10', 'calentamiento', 1),
+(42, 7, 2, '10', 'calentamiento', 2),
+(42, 8, 2, '10', 'calentamiento', 3),
+(42, 9, 2, '15"', 'calentamiento', 4),
+(42, 10, 2, '10', 'calentamiento', 5),
+(42, 11, 2, '10', 'calentamiento', 6),
 (42, 12, 2, '10', 'calentamiento', 7);
 
 -- ============================================
