@@ -49,7 +49,10 @@ const goToOpciones = () => {
       <div
         class="max-w-7xl mx-auto py-6 px-4 flex justify-between items-center"
       >
-        <h1 class="text-3xl font-bold text-gray-900">WodBox</h1>
+        <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-2">
+          <img src="/icon.png" alt="WodBox" class="h-10 rounded-lg" />
+          Box Tracker
+        </h1>
         <button @click="goToOpciones" class="text-gray-600 hover:text-gray-800">
           <svg
             xmlns="http://www.w3.org/2000/svg"

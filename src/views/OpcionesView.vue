@@ -1,10 +1,12 @@
 <script setup>
 import { useRouter } from "vue-router";
+import { useQueryClient } from "@tanstack/vue-query";
 import { useAuthStore } from "@/stores/auth";
 import { diaCompletadoService } from "@/services/diaCompletado";
 
 const router = useRouter();
 const authStore = useAuthStore();
+const queryClient = useQueryClient();
 
 const goBack = () => {
   router.push("/");
@@ -25,6 +27,11 @@ const resetDias = async () => {
     window.alert("Días reseteados correctamente");
   }
 };
+
+const reloadCache = async () => {
+  await queryClient.invalidateQueries();
+  window.alert("Cache recargado correctamente");
+};
 </script>
 
 <template>
@@ -41,6 +48,15 @@ const resetDias = async () => {
 
     <main class="p-4">
       <div class="space-y-3">
+        <button
+          @click="reloadCache"
+          class="w-full bg-white p-4 rounded-lg shadow text-left hover:bg-gray-50 active:bg-gray-100 transition-colors"
+        >
+          <h3 class="text-lg font-semibold text-indigo-600">Recargar datos</h3>
+          <p class="text-sm text-gray-500 mt-1">
+            Actualizar datos desde el servidor
+          </p>
+        </button>
         <button
           @click="resetDias"
           class="w-full bg-white p-4 rounded-lg shadow text-left hover:bg-gray-50 active:bg-gray-100 transition-colors"
