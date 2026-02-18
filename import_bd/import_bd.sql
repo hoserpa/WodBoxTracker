@@ -246,6 +246,22 @@ ALTER TABLE series ENABLE ROW LEVEL SECURITY;
 ALTER TABLE registros ENABLE ROW LEVEL SECURITY;
 
 -- ============================================
+-- RLS POLICIES FOR EJERCICIOS (Template data)
+-- ============================================
+
+DROP POLICY IF EXISTS "Anyone can read ejercicios" ON ejercicios;
+CREATE POLICY "Anyone can read ejercicios" ON ejercicios FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Users can insert their own ejercicios" ON ejercicios;
+CREATE POLICY "Users can insert their own ejercicios" ON ejercicios FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Users can update their own ejercicios" ON ejercicios;
+CREATE POLICY "Users can update their own ejercicios" ON ejercicios FOR UPDATE USING (true);
+
+DROP POLICY IF EXISTS "Users can delete their own ejercicios" ON ejercicios;
+CREATE POLICY "Users can delete their own ejercicios" ON ejercicios FOR DELETE USING (true);
+
+-- ============================================
 -- RLS POLICIES FOR RUTINAS
 -- ============================================
 

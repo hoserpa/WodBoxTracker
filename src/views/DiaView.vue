@@ -36,7 +36,21 @@ const tiposEnDia = computed(() => {
 const ejerciciosPorTipo = computed(() => {
   const grouped = {};
   tiposEnDia.value.forEach((tipo) => {
-    grouped[tipo] = series.value.filter((s) => s.tipo_ejercicio === tipo);
+    const seriesTipo = series.value.filter((s) => s.tipo_ejercicio === tipo);
+    const ejercicioMap = {};
+
+    seriesTipo.forEach((s) => {
+      const ejId = s.ejercicio_id;
+      if (!ejercicioMap[ejId]) {
+        ejercicioMap[ejId] = {
+          nombre: s.ejercicio?.nombre,
+          series: [],
+        };
+      }
+      ejercicioMap[ejId].series.push(s);
+    });
+
+    grouped[tipo] = Object.values(ejercicioMap);
   });
   return grouped;
 });
@@ -138,26 +152,33 @@ const goBack = () => {
             {{ tipoLabels[selectedTipo] }}
           </h2>
 
-          <div class="space-y-3">
+          <div class="space-y-4">
             <div
-              v-for="serie in ejerciciosPorTipo[selectedTipo]"
-              :key="serie.id"
+              v-for="ejercicio in ejerciciosPorTipo[selectedTipo]"
+              :key="ejercicio.nombre"
               class="bg-white p-4 rounded-lg shadow"
             >
-              <h3 class="font-semibold text-gray-900">
-                {{ serie.ejercicio?.nombre }}
+              <h3 class="font-semibold text-gray-900 text-lg">
+                {{ ejercicio.nombre }}
               </h3>
 
-              <div class="mt-2 flex flex-wrap gap-2 text-sm text-gray-600">
-                <span v-if="serie.series" class="bg-gray-100 px-2 py-1 rounded">
-                  {{ serie.repeticiones }}
-                </span>
-                <span
-                  v-if="serie.observaciones"
-                  class="bg-gray-100 px-2 py-1 rounded"
+              <div class="mt-3 space-y-2">
+                <div
+                  v-for="serie in ejercicio.series"
+                  :key="serie.id"
+                  class="flex items-center justify-between bg-gray-50 p-3 rounded"
                 >
-                  {{ serie.observaciones }}
-                </span>
+                  <div class="flex items-center gap-3">
+                    <span class="font-bold text-indigo-600 text-lg">
+                      {{ serie.series }}x{{ serie.repeticiones }}
+                    </span>
+                  </div>
+                  <div class="text-right">
+                    <p v-if="serie.observaciones" class="text-sm text-gray-600">
+                      {{ serie.observaciones }}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
