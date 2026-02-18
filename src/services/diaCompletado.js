@@ -90,4 +90,13 @@ export const diaCompletadoService = {
       return data;
     }
   },
+
+  async resetAll() {
+    const { error } = await supabase
+      .from("dias_completados")
+      .delete()
+      .neq("id", 0);
+
+    if (error) throw error;
+  },
 };

@@ -1,6 +1,7 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { diaCompletadoService } from "@/services/diaCompletado";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -12,6 +13,17 @@ const goBack = () => {
 const logout = async () => {
   await authStore.signOut();
   router.push("/login");
+};
+
+const resetDias = async () => {
+  if (
+    window.confirm(
+      "¿Estás seguro de que quieres resetear todos los días marcados como completados?",
+    )
+  ) {
+    await diaCompletadoService.resetAll();
+    window.alert("Días reseteados correctamente");
+  }
 };
 </script>
 
@@ -29,6 +41,17 @@ const logout = async () => {
 
     <main class="p-4">
       <div class="space-y-3">
+        <button
+          @click="resetDias"
+          class="w-full bg-white p-4 rounded-lg shadow text-left hover:bg-gray-50 active:bg-gray-100 transition-colors"
+        >
+          <h3 class="text-lg font-semibold text-orange-600">
+            Resetear días completados
+          </h3>
+          <p class="text-sm text-gray-500 mt-1">
+            Quitar todas las marcas de días hechos
+          </p>
+        </button>
         <button
           @click="logout"
           class="w-full bg-white p-4 rounded-lg shadow text-left hover:bg-gray-50 active:bg-gray-100 transition-colors"

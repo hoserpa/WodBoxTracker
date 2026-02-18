@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint src --ext .vue,.js,.jsx",
-    "lint:fix": "eslint src --ext .vue,.js,.jsx --fix"
+    "lint:fix": "eslint src --ext .vue,.js,.jsx --fix",
+    "deploy": "vite build && gh-pages -d dist"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.95.3",
