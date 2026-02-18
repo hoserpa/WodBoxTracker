@@ -11,6 +11,7 @@ npm run preview      # Preview production build
 npm run lint         # ESLint check
 npm run lint:fix     # ESLint auto-fix
 npm run deploy       # Build and deploy to gh-pages
+npm install @tanstack/vue-query  # TanStack Query for caching/offline
 ```
 
 **Testing** - Vitest NOT installed. Add:
@@ -121,6 +122,65 @@ export const useAuthStore = defineStore("auth", () => {
 
 ## In components: `const { user, isAuthenticated } = storeToRefs(authStore);`
 
+## TanStack Query (Vue Query)
+
+Caching and offline support. Configured in main.js with `offlineFirst` mode.
+
+### Setup (main.js)
+
+```js
+import { VueQueryPlugin } from "@tanstack/vue-query";
+const queryClient = new VueQueryPlugin.QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 60,
+      networkMode: "offlineFirst",
+    },
+    mutations: { networkMode: "offlineFirst" },
+  },
+});
+app.use(VueQueryPlugin, { queryClient });
+```
+
+### Composables (src/composables/useRutina.js)
+
+```js
+import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
+import { rutinaService } from "@/services/rutina";
+
+export function useRutinas() {
+  return useQuery({
+    queryKey: ["rutinas"],
+    queryFn: () => rutinaService.getAll(),
+  });
+}
+
+export function useRutina(id) {
+  return useQuery({
+    queryKey: ["rutina", id],
+    queryFn: () => rutinaService.getById(id),
+    enabled: !!id,
+  });
+}
+
+export function useCreateRutina() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => rutinaService.create(data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["rutinas"] }),
+  });
+}
+```
+
+### Usage in components
+
+```js
+const { data: rutinas, isLoading, error } = useRutinas();
+const createRutina = useCreateRutina();
+await createRutina.mutateAsync({ nombre: "Nueva Rutina" });
+```
+
 ## TailwindCSS
 
 - Mobile-first: base classes + `md:`/`lg:` for larger
@@ -174,6 +234,7 @@ src/
 ├── main.js, App.vue, router/index.js
 ├── views/           # Page components
 ├── components/      # Reusable components
+├── composables/     # TanStack Query composables (useRutina.js)
 ├── stores/          # Pinia stores
 ├── services/        # Supabase data layer
 └── lib/supabase.js  # Supabase client

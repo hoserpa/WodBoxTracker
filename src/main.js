@@ -1,12 +1,29 @@
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import router from './router'
-import './style.css'
-import App from './App.vue'
+import { createApp } from "vue";
+import { createPinia } from "pinia";
+import { VueQueryPlugin, QueryClient } from "@tanstack/vue-query";
+import router from "./router";
+import "./style.css";
+import App from "./App.vue";
 
-const app = createApp(App)
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 60,
+      retry: 1,
+      networkMode: "offlineFirst",
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      networkMode: "offlineFirst",
+    },
+  },
+});
 
-app.use(createPinia())
-app.use(router)
+const app = createApp(App);
 
-app.mount('#app')
+app.use(createPinia());
+app.use(router);
+app.use(VueQueryPlugin, { queryClient });
+
+app.mount("#app");
