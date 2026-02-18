@@ -32,6 +32,13 @@ const tipoLabels = {
   core: "Core",
 };
 
+const tipoColors = {
+  principal: "from-violet-500 to-purple-600",
+  secundario: "from-cyan-500 to-blue-600",
+  calentamiento: "from-orange-500 to-amber-600",
+  core: "from-rose-500 to-red-600",
+};
+
 const tiposEnDia = computed(() => {
   const tipos = new Set(series.value.map((s) => s.tipo_ejercicio));
   const orden = ["calentamiento", "principal", "secundario", "core"];
@@ -156,153 +163,244 @@ const toggleCompletado = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-100 pb-20">
-    <header class="bg-white shadow sticky top-0 z-10">
+  <div
+    class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pb-24"
+  >
+    <header
+      class="bg-white/10 backdrop-blur-md border-b border-white/10 sticky top-0 z-20"
+    >
       <div class="px-4 py-4">
-        <button @click="goBack" class="text-indigo-600 font-medium">
-          ← Volver
+        <button
+          @click="goBack"
+          class="text-violet-400 font-medium hover:text-violet-300 transition-colors flex items-center gap-2 mb-3"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          Volver
         </button>
-        <div class="flex items-center justify-between mt-2">
-          <h1 class="text-xl font-bold text-gray-900">
-            {{ dia?.nombre || `Día ${dia?.numero}` }}
-          </h1>
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-xl font-bold text-white">
+              {{ dia?.nombre || `Día ${dia?.numero}` }}
+            </h1>
+            <p class="text-white/50 text-sm">
+              {{ rutina?.nombre }} - Semana {{ semana?.numero }}
+            </p>
+          </div>
           <button
             @click="toggleCompletado"
-            class="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border"
+            class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all duration-300"
             :class="
               completado
-                ? 'bg-green-100 border-green-300 text-green-700'
-                : 'bg-gray-100 border-gray-300 text-gray-500 hover:bg-gray-200'
+                ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/30'
+                : 'bg-white/10 border border-white/20 text-white/70 hover:bg-white/20'
             "
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
               <path
-                fill-rule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clip-rule="evenodd"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 13l4 4L19 7"
               />
             </svg>
-            {{ completado ? "Completado" : "Marcar hecho" }}
+            {{ completado ? "Hecho" : "Completar" }}
           </button>
         </div>
-        <p class="text-sm text-gray-600">
-          {{ rutina?.nombre }} - Semana {{ semana?.numero }}
-        </p>
       </div>
     </header>
 
-    <main class="p-4">
-      <div v-if="loading" class="text-center py-8">
-        <p class="text-gray-500">Cargando...</p>
+    <main class="p-4 max-w-3xl mx-auto">
+      <div v-if="loading" class="flex justify-center py-16">
+        <div
+          class="animate-spin rounded-full h-12 w-12 border-4 border-violet-500 border-t-transparent"
+        ></div>
       </div>
 
       <div
         v-else-if="error"
-        class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"
+        class="bg-red-500/20 border border-red-500/50 text-red-200 px-6 py-4 rounded-2xl backdrop-blur-sm"
       >
         {{ error }}
       </div>
 
       <div v-else>
-        <!-- Lista de tipos -->
-        <div v-if="!selectedTipo" class="space-y-3">
+        <div v-if="!selectedTipo" class="space-y-4">
           <button
             v-for="tipo in tiposEnDia"
             :key="tipo"
             @click="selectTipo(tipo)"
-            class="w-full bg-white p-4 rounded-lg shadow text-left hover:bg-gray-50 active:bg-gray-100 transition-colors"
+            class="w-full group relative overflow-hidden rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 p-5 text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
           >
-            <h3 class="text-lg font-semibold text-gray-900">
-              {{ tipoLabels[tipo] }}
-            </h3>
-            <p class="text-sm text-gray-500 mt-1">
-              {{ ejerciciosPorTipo[tipo]?.length }} ejercicio{{
-                ejerciciosPorTipo[tipo]?.length !== 1 ? "s" : ""
-              }}
-            </p>
+            <div
+              :class="[
+                'absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500',
+                tipoColors[tipo],
+              ]"
+            ></div>
+            <div class="relative flex items-center justify-between">
+              <div>
+                <h3 class="text-xl font-bold text-white">
+                  {{ tipoLabels[tipo] }}
+                </h3>
+                <p class="text-white/60 text-sm mt-1">
+                  {{ ejerciciosPorTipo[tipo]?.length }} ejercicio{{
+                    ejerciciosPorTipo[tipo]?.length !== 1 ? "s" : ""
+                  }}
+                </p>
+              </div>
+              <div
+                :class="[
+                  'w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg',
+                  tipoColors[tipo],
+                ]"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-6 w-6 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </div>
+            </div>
           </button>
         </div>
 
-        <!-- Ejercicios del tipo seleccionado -->
         <div v-else>
-          <h2 class="text-lg font-bold text-gray-800 mb-4">
-            {{ tipoLabels[selectedTipo] }}
-          </h2>
+          <button
+            @click="selectedTipo = null"
+            class="flex items-center gap-2 text-violet-400 font-medium mb-4 hover:text-violet-300 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+            Volver
+          </button>
+
+          <div
+            :class="[
+              'inline-block px-4 py-2 rounded-xl bg-gradient-to-r mb-4',
+              tipoColors[selectedTipo],
+            ]"
+          >
+            <h2 class="text-lg font-bold text-white">
+              {{ tipoLabels[selectedTipo] }}
+            </h2>
+          </div>
 
           <div class="space-y-4">
             <div
               v-for="ejercicio in ejerciciosPorTipo[selectedTipo]"
               :key="ejercicio.nombre"
-              class="bg-white p-4 rounded-lg shadow"
+              class="rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 overflow-hidden"
             >
-              <h3
-                class="font-semibold text-gray-900 text-lg flex items-center gap-2"
-              >
-                {{ ejercicio.nombre }}
-                <a
-                  v-if="ejercicio.series[0]?.ejercicio?.url"
-                  :href="ejercicio.series[0].ejercicio.url"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="text-indigo-600 hover:text-indigo-800"
+              <div class="p-4 border-b border-white/10">
+                <h3
+                  class="font-bold text-white text-lg flex items-center gap-2"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+                  {{ ejercicio.nombre }}
+                  <a
+                    v-if="ejercicio.series[0]?.ejercicio?.url"
+                    :href="ejercicio.series[0].ejercicio.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-violet-400 hover:text-violet-300 transition-colors"
                   >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                    />
-                  </svg>
-                </a>
-              </h3>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                      />
+                    </svg>
+                  </a>
+                </h3>
+              </div>
 
-              <div class="mt-3 space-y-2">
+              <div class="divide-y divide-white/10">
                 <div
                   v-for="serie in ejercicio.series"
                   :key="serie.id"
-                  class="bg-gray-50 p-3 rounded"
+                  class="p-3 flex items-center justify-between gap-2"
                 >
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                      <span class="font-bold text-indigo-600 text-lg">
-                        {{ serie.series }}x{{ serie.repeticiones }}
-                      </span>
-                    </div>
+                  <div class="flex items-center gap-2 min-w-0">
                     <div
-                      v-if="canRecordWeight(selectedTipo)"
-                      class="flex items-center gap-2"
+                      class="w-auto h-10 px-3 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shrink-0"
                     >
-                      <input
-                        type="number"
-                        step="0.5"
-                        :placeholder="getRegistro(serie.id)?.peso || 'kg'"
-                        class="w-20 px-2 py-1 text-center border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        @change="
-                          (e) =>
-                            saveWeight(serie.id, parseFloat(e.target.value))
-                        "
-                      />
-                      <span class="text-sm text-gray-500">kg</span>
+                      <span
+                        class="text-white font-bold text-sm whitespace-nowrap"
+                        >{{ serie.series }}x{{ serie.repeticiones }}</span
+                      >
                     </div>
+                    <p
+                      v-if="serie.observaciones"
+                      class="text-white/50 text-xs truncate"
+                    >
+                      {{ serie.observaciones }}
+                    </p>
                   </div>
-                  <p
-                    v-if="serie.observaciones"
-                    class="text-sm text-gray-600 mt-1"
+                  <div
+                    v-if="canRecordWeight(selectedTipo)"
+                    class="flex items-center gap-2 shrink-0"
                   >
-                    {{ serie.observaciones }}
-                  </p>
+                    <input
+                      type="number"
+                      step="0.5"
+                      :placeholder="
+                        getRegistro(serie.id)?.peso
+                          ? `${getRegistro(serie.id).peso} kg`
+                          : 'kg'
+                      "
+                      class="w-20 px-2 py-1.5 text-center text-sm bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      @change="
+                        (e) => saveWeight(serie.id, parseFloat(e.target.value))
+                      "
+                    />
+                  </div>
                 </div>
               </div>
             </div>
