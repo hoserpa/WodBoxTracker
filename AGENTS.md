@@ -1,55 +1,35 @@
 # WodBoxTracker - AGENTS.md
 
-## Project Overview
-
-Vue 3 SPA with Supabase backend for gym workout tracking. Mobile-first design for use during training.
-
-Stack: Vue 3 (Composition API), Vite, TailwindCSS, Pinia, Supabase (Auth + PostgreSQL).
-
----
+## Vue 3 SPA with Supabase for gym workout tracking. Stack: Vue 3 (Composition API), Vite, TailwindCSS, Pinia, Supabase.
 
 ## Commands
 
 ```bash
-npm run dev          # Dev server
+npm run dev          # Dev server (http://localhost:5173)
 npm run build        # Production build
-npm run preview      # Preview build
-npm run lint         # ESLint
+npm run preview      # Preview production build
+npm run lint         # ESLint check
 npm run lint:fix     # ESLint auto-fix
+npm run deploy       # Build and deploy to gh-pages
 ```
 
-**Testing** - Vitest is NOT installed. To add:
+**Testing** - Vitest NOT installed. Add:
 
 ```bash
-npm install -D vitest
+npm install -D vitest @vue/test-utils jsdom
 ```
 
-Add to package.json:
-
-```json
-"test": "vitest",
-"test:watch": "vitest --watch",
-"test:coverage": "vitest --coverage",
-"test:single": "vitest run"
-```
-
-To run a single test file: `npx vitest run src/components/__tests__/MyComponent.test.js`
+Add to package.json: `"test": "vitest", "test:single": "vitest run"`
+Run single test: `npx vitest run src/components/__tests__/MyComponent.test.js`
 
 ---
 
 ## Code Style
 
-### General
-
-- Language: JavaScript (no TypeScript)
-- Linter: ESLint with Vue 3 config
-- Formatter: Prettier (integrated with ESLint)
+- Language: JavaScript (no TypeScript), ESLint + Prettier, 2 spaces, semicolons, single quotes
 - Use Composition API with `<script setup>`
-- 2 spaces indentation, semicolons, single quotes
 
-### Imports
-
-Use `@/` alias for project paths. Group order: Vue → libraries → stores → services → components.
+### Imports (group order)
 
 ```js
 import { ref, computed } from "vue";
@@ -62,46 +42,31 @@ import ExerciseCard from "@/components/ExerciseCard.vue";
 
 ### Naming
 
-- Components: PascalCase (`ExerciseCard.vue`)
-- Stores: camelCase with `use` prefix (`useAuthStore.js`)
-- Services: camelCase (`rutinaService.js`)
-- Constants: SCREAMING_SNAKE_CASE
-- Props/Variables: camelCase
+- Components: PascalCase, Stores: `useXxxStore.js`, Services: camelCase, Constants: SCREAMING_SNAKE_CASE
 
 ### Vue Components
 
 ```vue
 <script setup>
 import { ref, computed } from "vue";
-
-const props = defineProps({
-  routineId: { type: String, required: true },
-});
-
+const props = defineProps({ routineId: { type: String, required: true } });
 const emit = defineEmits(["update", "delete"]);
 const isLoading = ref(false);
 </script>
-
 <template>
-  <div class="p-4">
-    <!-- content -->
-  </div>
+  <div class="p-4"><!-- content --></div>
 </template>
 ```
 
 ### Supabase Patterns
 
 ```js
-const { data, error } = await supabase
-  .from("table")
-  .select("columns")
-  .eq("field", value);
-
-if (error) throw error;
-return data;
+// SELECT: const { data, error } = await supabase.from("table").select("cols").eq("field", val);
+// INSERT: const { data, error } = await supabase.from("table").insert({ col: val }).select().single();
+// UPDATE: const { data, error } = await supabase.from("table").update({ col: val }).eq("id", id).select().single();
+// DELETE: const { error } = await supabase.from("table").delete().eq("id", id);
+// All: if (error) throw error;
 ```
-
-Always handle session null, use RLS on all tables, validate data before sending.
 
 ### Error Handling
 
@@ -121,10 +86,83 @@ const loadData = async () => {
 
 ---
 
+## Pinia Stores
+
+```js
+import { defineStore } from "pinia";
+import { ref, computed } from "vue";
+import { supabase } from "@/lib/supabase";
+export const useAuthStore = defineStore("auth", () => {
+  const user = ref(null),
+    session = ref(null);
+  const isAuthenticated = computed(() => !!user.value);
+  const initialize = async () => {
+    const { data } = await supabase.auth.getSession();
+    session.value = data.session;
+    user.value = data.session?.user ?? null;
+  };
+  const signIn = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) throw error;
+    user.value = data.user;
+    session.value = data.session;
+  };
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    user.value = null;
+    session.value = null;
+  };
+  return { user, session, isAuthenticated, initialize, signIn, signOut };
+});
+```
+
+## In components: `const { user, isAuthenticated } = storeToRefs(authStore);`
+
+## TailwindCSS
+
+- Mobile-first: base classes + `md:`/`lg:` for larger
+- Use `gap-` for spacing, `p-`/`m-` with scale (1-6, 8, 10, 12, 16...)
+- Semantic colors: `bg-white`, `text-gray-900`
+- Interactive: `hover:`, `focus:`, `active:` prefixes
+
+```vue
+<div class="flex min-h-screen flex-col items-center gap-4 p-4 md:p-8">
+  <button class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">Action</button>
+</div>
+```
+
+---
+
+## Routing
+
+```js
+const routes = [
+  { path: "/", name: "home", component: HomeView },
+  { path: "/rutinas", name: "rutinas", component: RutinasView },
+  {
+    path: "/rutinas/:id",
+    name: "rutina-detalle",
+    component: RutinaDetalleView,
+  },
+];
+const router = createRouter({ history: createWebHistory(), routes });
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore();
+  if (to.meta.requiresAuth && !authStore.isAuthenticated)
+    next({ name: "login" });
+  else next();
+});
+```
+
+---
+
 ## Security
 
-- Allowed in frontend: `SUPABASE_URL`, `SUPABASE_ANON_KEY` (public keys)
-- NEVER expose: service_role, connection strings, secrets
+- Allowed: `SUPABASE_URL`, `SUPABASE_ANON_KEY` (public keys only)
+- NEVER expose: service_role, secrets, connection strings
 - All tables require RLS policies
 
 ---
@@ -133,12 +171,10 @@ const loadData = async () => {
 
 ```
 src/
-├── main.js
-├── App.vue
-├── router/
-├── views/       # Page components
-├── components/  # Reusable components
-├── stores/      # Pinia stores
-├── services/    # Supabase data layer
-└── lib/         # supabase.js client
+├── main.js, App.vue, router/index.js
+├── views/           # Page components
+├── components/      # Reusable components
+├── stores/          # Pinia stores
+├── services/        # Supabase data layer
+└── lib/supabase.js  # Supabase client
 ```
