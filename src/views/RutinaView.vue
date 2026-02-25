@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import { rutinaService } from "@/services/rutina";
 import { semanaService } from "@/services/semana";
 import { diaCompletadoService } from "@/services/diaCompletado";
+import { diaService } from "@/services/dia";
 
 const route = useRoute();
 const router = useRouter();
@@ -35,7 +36,6 @@ const loadData = async () => {
     const completados = await diaCompletadoService.getByRutina(rutinaId.value);
 
     const completadosPorSemana = {};
-    const diasPorSemana = {};
 
     completados.forEach((d) => {
       const semana = semanasData.find((s) => s.id === d.semana_id);
@@ -44,17 +44,26 @@ const loadData = async () => {
           completadosPorSemana[semana.numero] = 0;
         }
         completadosPorSemana[semana.numero]++;
-
-        if (!diasPorSemana[semana.numero]) {
-          diasPorSemana[semana.numero] = new Set();
-        }
-        diasPorSemana[semana.numero].add(d.dia_id);
       }
     });
 
+    const diasPorSemanaCount = {};
+    await Promise.all(
+      semanasData.map(async (s) => {
+        const dias = await diaService.getBySemana(s.id);
+        diasPorSemanaCount[s.numero] = dias.length;
+      })
+    );
+
     semanasData.forEach((s) => {
-      const diasEnSemana = diasPorSemana[s.numero]?.size || 0;
-      if (completadosPorSemana[s.numero] === diasEnSemana && diasEnSemana > 0) {
+      const diasEnSemana = diasPorSemanaCount[s.numero] || 0;
+      console.log(
+        `Semana ${s.numero}: ${completadosPorSemana[s.numero] || 0} completados, ${diasEnSemana} días en total`
+      );
+      if (
+        completadosPorSemana[s.numero] === diasEnSemana &&
+        diasEnSemana > 0
+      ) {
         semanasCompletas.value.add(s.id);
       }
     });
