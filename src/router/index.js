@@ -13,6 +13,24 @@ const routes = [
     component: () => import("@/views/LoginView.vue"),
   },
   {
+    path: "/benchmarks",
+    name: "Benchmarks",
+    component: () => import("@/views/BenchmarksView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/benchmarks/principales",
+    name: "BenchmarksPrincipales",
+    component: () => import("@/views/BenchmarksPrincipalesView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/benchmarks/secundarios",
+    name: "BenchmarksSecundarios",
+    component: () => import("@/views/BenchmarksSecundariosView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/opciones",
     name: "Opciones",
     component: () => import("@/views/OpcionesView.vue"),

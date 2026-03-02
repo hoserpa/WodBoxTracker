@@ -42,6 +42,10 @@ const goToOpciones = () => {
   router.push("/opciones");
 };
 
+const goToBenchmarks = () => {
+  router.push("/benchmarks");
+};
+
 const getGradient = (index) => {
   const gradients = [
     "from-violet-500 to-purple-600",
@@ -213,6 +217,70 @@ const getGradient = (index) => {
         </div>
         <p class="text-white/60 text-lg">No tienes rutinas todavía</p>
       </div>
+
+      <div class="flex items-center gap-3 mb-8 mt-12">
+        <div
+          class="w-1 h-8 bg-gradient-to-b from-amber-500 to-orange-500 rounded-full"
+        ></div>
+        <h2 class="text-2xl font-bold text-white">Tus Benchmarks</h2>
+      </div>
+
+      <button
+        @click="goToBenchmarks"
+        class="group relative overflow-hidden rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 p-6 text-left transition-all duration-300 hover:bg-white/20 hover:scale-[1.02] hover:shadow-2xl hover:shadow-amber-500/20"
+      >
+        <div
+          class="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 from-amber-500 to-orange-600"
+        ></div>
+        <div class="relative">
+          <div class="flex items-center gap-3 mb-3">
+            <div
+              class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                />
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold text-white group-hover:text-white">
+              Ver Benchmarks
+            </h3>
+          </div>
+          <p
+            class="text-white/60 text-sm group-hover:text-white/80 transition-colors"
+          >
+            Repeticiones, tiempos y marcas personales
+          </p>
+        </div>
+        <div
+          class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </div>
+      </button>
     </main>
   </div>
 </template>

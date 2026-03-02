@@ -7,6 +7,8 @@ import { diaService } from "@/services/dia";
 import { serieService } from "@/services/serie";
 import { registroService } from "@/services/registro";
 import { diaCompletadoService } from "@/services/diaCompletado";
+import { userRmService } from "@/services/user_rm";
+import { extraerRPE, calcularPesoSugerido } from "@/utils/rpeCalculator";
 
 const route = useRoute();
 const router = useRouter();
@@ -24,6 +26,7 @@ const error = ref("");
 const registros = ref({});
 const saving = ref({});
 const completado = ref(false);
+const rmMap = ref({});
 
 const tipoLabels = {
   principal: "Ejercicios Principales",
@@ -100,6 +103,9 @@ const loadData = async () => {
       const serieIds = seriesData.map((s) => s.id);
       const registrosData = await registroService.getBySeries(serieIds);
       registros.value = registrosData;
+
+      const ejercicioIds = [...new Set(seriesData.map((s) => s.ejercicio_id))];
+      rmMap.value = await userRmService.getMapByEjercicioIds(ejercicioIds);
     }
 
     const completadoData = await diaCompletadoService.getByDia(diaId.value);
@@ -130,6 +136,16 @@ const canRecordWeight = (tipo) => {
 
 const getRegistro = (serieId) => {
   return registros.value[serieId];
+};
+
+const getPesoSugerido = (serie) => {
+  const rmData = rmMap.value[serie.ejercicio_id];
+  if (!rmData?.rm) return null;
+
+  const rpe = extraerRPE(serie.observaciones);
+  if (!rpe) return null;
+
+  return calcularPesoSugerido(rmData.rm, serie.repeticiones, rpe);
 };
 
 const saveWeight = async (serieId, peso) => {
@@ -387,6 +403,12 @@ const toggleCompletado = async () => {
                     v-if="canRecordWeight(selectedTipo)"
                     class="flex items-center gap-2 shrink-0"
                   >
+                    <span
+                      v-if="getPesoSugerido(serie)"
+                      class="text-amber-400 text-xs font-medium"
+                    >
+                      → {{ getPesoSugerido(serie) }} kg
+                    </span>
                     <input
                       type="number"
                       step="0.5"
