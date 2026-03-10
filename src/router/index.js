@@ -31,6 +31,24 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/halterofilia",
+    name: "Halterofilia",
+    component: () => import("@/views/HalterofiliaView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/halterofilia/calculadora",
+    name: "HalterofiliaCalculadora",
+    component: () => import("@/views/HalterofiliaCalculadoraView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/halterofilia/rm-ejercicios",
+    name: "HalterofiliaRmEjercicios",
+    component: () => import("@/views/HalterofiliaRmEjerciciosView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/opciones",
     name: "Opciones",
     component: () => import("@/views/OpcionesView.vue"),

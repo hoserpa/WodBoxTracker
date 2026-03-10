@@ -46,6 +46,10 @@ const goToBenchmarks = () => {
   router.push("/benchmarks");
 };
 
+const goToHalterofilia = () => {
+  router.push("/halterofilia");
+};
+
 const getGradient = (index) => {
   const gradients = [
     "from-violet-500 to-purple-600",
@@ -227,7 +231,7 @@ const getGradient = (index) => {
 
       <button
         @click="goToBenchmarks"
-        class="group relative overflow-hidden rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 p-6 text-left transition-all duration-300 hover:bg-white/20 hover:scale-[1.02] hover:shadow-2xl hover:shadow-amber-500/20"
+        class="group relative overflow-hidden rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 p-6 text-left transition-all duration-300 hover:bg-white/20 hover:scale-[1.02] hover:shadow-2xl hover:shadow-amber-500/20 w-full mb-12"
       >
         <div
           class="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 from-amber-500 to-orange-600"
@@ -260,6 +264,70 @@ const getGradient = (index) => {
             class="text-white/60 text-sm group-hover:text-white/80 transition-colors"
           >
             Repeticiones, tiempos y marcas personales
+          </p>
+        </div>
+        <div
+          class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </div>
+      </button>
+
+      <div class="flex items-center gap-3 mb-8">
+        <div
+          class="w-1 h-8 bg-gradient-to-b from-cyan-500 to-blue-500 rounded-full"
+        ></div>
+        <h2 class="text-2xl font-bold text-white">Halterofilia</h2>
+      </div>
+
+      <button
+        @click="goToHalterofilia"
+        class="group relative overflow-hidden rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 p-6 text-left transition-all duration-300 hover:bg-white/20 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20 w-full"
+      >
+        <div
+          class="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 from-cyan-500 to-blue-600"
+        ></div>
+        <div class="relative">
+          <div class="flex items-center gap-3 mb-3">
+            <div
+              class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"
+                />
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold text-white group-hover:text-white">
+              Halterofilia
+            </h3>
+          </div>
+          <p
+            class="text-white/60 text-sm group-hover:text-white/80 transition-colors"
+          >
+            Calculadora y RM de ejercicios
           </p>
         </div>
         <div

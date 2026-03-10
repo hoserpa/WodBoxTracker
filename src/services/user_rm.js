@@ -2,7 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores/auth";
 
 export const userRmService = {
-  async getByUser() {
+  async getByUser () {
     const authStore = useAuthStore();
     const userId = authStore.user?.id;
 
@@ -16,7 +16,7 @@ export const userRmService = {
     return data;
   },
 
-  async getMapByEjercicioIds(ejercicioIds) {
+  async getMapByEjercicioIds (ejercicioIds) {
     const authStore = useAuthStore();
     const userId = authStore.user?.id;
 
@@ -43,7 +43,7 @@ export const userRmService = {
     return rmMap;
   },
 
-  async getByTipo(tipoNombre) {
+  async getByTipo (tipoNombre) {
     const authStore = useAuthStore();
     const userId = authStore.user?.id;
 
@@ -52,6 +52,7 @@ export const userRmService = {
       principal: 2,
       secundario: 3,
       core: 4,
+      halterofilia: 5,
     };
 
     const tipoId = tipoMap[tipoNombre];
@@ -102,7 +103,68 @@ export const userRmService = {
     });
   },
 
-  async upsert(ejercicioId, rm, notas = null) {
+  async getHalterofilia () {
+    const authStore = useAuthStore();
+    const userId = authStore.user?.id;
+
+    // Query 1: Ejercicios con tipo_id = 5 (halterofilia)
+    const { data: halterofiliaEjercicios, error: errorHalterofilia } =
+      await supabase
+        .from("ejercicios")
+        .select("id, nombre, tipo_id")
+        .eq("tipo_id", 5)
+        .order("nombre");
+
+    if (errorHalterofilia) {
+      console.error("Error fetching halterofilia ejercicios:", errorHalterofilia);
+      throw errorHalterofilia;
+    }
+
+    // Query 2: Ejercicios con nombres "BACK SQUAT" y "FRONT SQUAT" (tipo_id = 2 - principal)
+    const { data: squatEjercicios, error: errorSquat } = await supabase
+      .from("ejercicios")
+      .select("id, nombre, tipo_id")
+      .eq("tipo_id", 2)
+      .in("nombre", ["BACK SQUAT", "FRONT SQUAT"])
+      .order("nombre");
+
+    if (errorSquat) {
+      console.error("Error fetching squat ejercicios:", errorSquat);
+      throw errorSquat;
+    }
+
+    // Combinar listas eliminando duplicados por id
+    const combinedMap = new Map();
+    halterofiliaEjercicios.forEach((e) => combinedMap.set(e.id, e));
+    squatEjercicios.forEach((e) => {
+      if (!combinedMap.has(e.id)) {
+        combinedMap.set(e.id, e);
+      }
+    });
+
+    const allEjercicios = Array.from(combinedMap.values());
+    const ejercicioIds = allEjercicios.map((e) => e.id);
+
+    if (ejercicioIds.length === 0) {
+      return [];
+    }
+
+    // Obtener RM del usuario para estos ejercicios
+    const rmMap = await this.getMapByEjercicioIds(ejercicioIds);
+
+    // Enriquecer con RM y retornar
+    return allEjercicios.map((ejercicio) => {
+      const rmData = rmMap[ejercicio.id];
+      return {
+        ...ejercicio,
+        rm: rmData?.rm || null,
+        fecha: rmData?.fecha || null,
+        notas: rmData?.notas || null,
+      };
+    });
+  },
+
+  async upsert (ejercicioId, rm, notas = null) {
     const authStore = useAuthStore();
     const userId = authStore.user?.id;
 

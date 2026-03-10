@@ -6,7 +6,7 @@
 -- ============================================
 
 DO $$ BEGIN
-  CREATE TYPE tipo_ejercicio AS ENUM ('calentamiento', 'principal', 'secundario', 'core');
+  CREATE TYPE tipo_ejercicio AS ENUM ('calentamiento', 'principal', 'secundario', 'core', 'halterofilia');
 EXCEPTION
   WHEN duplicate_object THEN null;
 END $$;

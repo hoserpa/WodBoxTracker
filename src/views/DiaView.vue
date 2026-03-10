@@ -309,26 +309,6 @@ const toggleCompletado = async () => {
         </div>
 
         <div v-else>
-          <button
-            @click="selectedTipo = null"
-            class="flex items-center gap-2 text-violet-400 font-medium mb-4 hover:text-violet-300 transition-colors"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            Volver
-          </button>
 
           <div
             :class="[
@@ -381,9 +361,9 @@ const toggleCompletado = async () => {
                 <div
                   v-for="serie in ejercicio.series"
                   :key="serie.id"
-                  class="p-3 flex items-center justify-between gap-2"
+                  class="p-3 flex items-start justify-between gap-2"
                 >
-                  <div class="flex items-center gap-2 min-w-0">
+                  <div class="flex items-start gap-2 min-w-0 flex-1">
                     <div
                       class="w-auto h-10 px-3 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shrink-0"
                     >
@@ -392,23 +372,25 @@ const toggleCompletado = async () => {
                         >{{ serie.series }}x{{ serie.repeticiones }}</span
                       >
                     </div>
-                    <p
-                      v-if="serie.observaciones"
-                      class="text-white/50 text-xs truncate"
-                    >
-                      {{ serie.observaciones }}
-                    </p>
+                    <div class="flex flex-col gap-1 min-w-0">
+                      <p
+                        v-if="serie.observaciones"
+                        class="text-white/50 text-xs truncate"
+                      >
+                        {{ serie.observaciones }}
+                      </p>
+                      <span
+                        v-if="getPesoSugerido(serie)"
+                        class="text-amber-400 text-xs font-medium"
+                      >
+                        → {{ getPesoSugerido(serie) }} kg
+                      </span>
+                    </div>
                   </div>
                   <div
                     v-if="canRecordWeight(selectedTipo)"
                     class="flex items-center gap-2 shrink-0"
                   >
-                    <span
-                      v-if="getPesoSugerido(serie)"
-                      class="text-amber-400 text-xs font-medium"
-                    >
-                      → {{ getPesoSugerido(serie) }} kg
-                    </span>
                     <input
                       type="number"
                       step="0.5"
