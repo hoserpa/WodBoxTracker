@@ -104,9 +104,6 @@ export const userRmService = {
   },
 
   async getHalterofilia () {
-    const authStore = useAuthStore();
-    const userId = authStore.user?.id;
-
     // Query 1: Ejercicios con tipo_id = 5 (halterofilia)
     const { data: halterofiliaEjercicios, error: errorHalterofilia } =
       await supabase

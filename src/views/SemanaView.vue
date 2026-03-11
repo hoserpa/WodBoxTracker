@@ -70,17 +70,6 @@ const getDiaGradient = (index) => {
   return gradients[index % gradients.length];
 };
 
-const getDayIcon = (nombre) => {
-  const dayName = (nombre || "").toLowerCase();
-  if (dayName.includes("pierna") || dayName.includes("leg")) return "🦵";
-  if (dayName.includes("pecho") || dayName.includes("chest")) return "💪";
-  if (dayName.includes("espalda") || dayName.includes("back")) return "🔙";
-  if (dayName.includes("hombro") || dayName.includes("shoulder")) return "💪";
-  if (dayName.includes("brazo") || dayName.includes("arm")) return "💪";
-  if (dayName.includes("cardio")) return "❤️";
-  if (dayName.includes("core")) return "🔥";
-  return "🏋️";
-};
 </script>
 
 <template>
@@ -142,14 +131,27 @@ const getDayIcon = (nombre) => {
         >
           <div class="relative p-5 flex items-center gap-4">
             <div
-              class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg text-3xl"
+              class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg"
               :class="
                 diasCompletados.has(dia.id)
                   ? 'bg-white/20'
                   : `bg-gradient-to-br ${getDiaGradient(index)}`
               "
             >
-              {{ getDayIcon(dia.nombre) }}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-10 w-10 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path 
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 10v4m2-6v8m2-4h8m2-4v8m2-6v4"
+                />
+              </svg>
             </div>
             <div class="flex-1 text-left">
               <h3 class="text-lg font-bold text-white">

@@ -7,12 +7,16 @@ const goToOpciones = () => {
   router.push("/opciones");
 };
 
-const goToCalculadora = () => {
-  router.push("/halterofilia/calculadora");
+const goToEntrenamiento = () => {
+  router.push("/halterofilia/entrenamiento");
 };
 
 const goToRmEjercicios = () => {
   router.push("/halterofilia/rm-ejercicios");
+};
+
+const goToHistorial = () => {
+  router.push("/halterofilia/historial");
 };
 
 const goBack = () => {
@@ -23,6 +27,7 @@ const getGradient = (index) => {
   const gradients = [
     "from-amber-500 to-orange-600",
     "from-cyan-500 to-blue-600",
+    "from-violet-500 to-purple-600",
   ];
   return gradients[index % gradients.length];
 };
@@ -105,9 +110,9 @@ const getGradient = (index) => {
         <h2 class="text-2xl font-bold text-white">Halterofilia</h2>
       </div>
 
-      <div class="grid gap-4 sm:grid-cols-2">
+      <div class="grid gap-4 sm:grid-cols-3">
         <button
-          @click="goToCalculadora"
+          @click="goToEntrenamiento"
           class="group relative overflow-hidden rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 p-6 text-left transition-all duration-300 hover:bg-white/20 hover:scale-[1.02] hover:shadow-2xl hover:shadow-amber-500/20"
         >
           <div
@@ -120,33 +125,20 @@ const getGradient = (index) => {
             <div class="flex items-center gap-3 mb-3">
               <div
                 :class="[
-                  'w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg',
+                  'w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg text-2xl',
                   getGradient(0),
                 ]"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-6 w-6 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-                  />
-                </svg>
+                🏋️
               </div>
               <h3 class="text-xl font-bold text-white group-hover:text-white">
-                Calculadora
+                Entrenaminento
               </h3>
             </div>
             <p
               class="text-white/60 text-sm group-hover:text-white/80 transition-colors"
             >
-              Calcula porcentajes y cargas para tus lifts
+              Crea y sigue tus entrenamientos personalizados
             </p>
           </div>
           <div
@@ -210,6 +202,69 @@ const getGradient = (index) => {
               class="text-white/60 text-sm group-hover:text-white/80 transition-colors"
             >
               Registra tus repeticiones máximas
+            </p>
+          </div>
+          <div
+            class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </div>
+        </button>
+
+        <button
+          @click="goToHistorial"
+          class="group relative overflow-hidden rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 p-6 text-left transition-all duration-300 hover:bg-white/20 hover:scale-[1.02] hover:shadow-2xl hover:shadow-violet-500/20"
+        >
+          <div
+            :class="[
+              'absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500',
+              getGradient(2),
+            ]"
+          ></div>
+          <div class="relative">
+            <div class="flex items-center gap-3 mb-3">
+              <div
+                :class="[
+                  'w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg',
+                  getGradient(2),
+                ]"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-6 w-6 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold text-white group-hover:text-white">
+                Historial
+              </h3>
+            </div>
+            <p
+              class="text-white/60 text-sm group-hover:text-white/80 transition-colors"
+            >
+              Ver entrenamientos guardados
             </p>
           </div>
           <div

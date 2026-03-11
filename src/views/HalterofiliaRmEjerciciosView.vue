@@ -1,13 +1,26 @@
 <script setup>
-import { ref, onMounted } from "vue";
+/* global setTimeout confirm */
+import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { userRmService } from "@/services/user_rm";
+import { supabase } from "@/lib/supabase";
+import { useAuthStore } from "@/stores/auth";
+import { storeToRefs } from "pinia";
 
 const router = useRouter();
+const authStore = useAuthStore();
+const { user } = storeToRefs(authStore);
 const ejercicios = ref([]);
 const loading = ref(true);
 const error = ref("");
 const saving = ref({});
+const mensajeExito = ref("");
+const nuevoEjercicio = ref("");
+const guardandoNuevo = ref(false);
+
+const puedeBorrar = computed(() => {
+  return user.value?.email === "joraalgo@gmail.com";
+});
 
 const goToOpciones = () => {
   router.push("/opciones");
@@ -43,7 +56,63 @@ const saveRm = async (ejercicio) => {
   }
 };
 
-onMounted(async () => {
+const crearEjercicio = async () => {
+  if (!nuevoEjercicio.value.trim()) return;
+
+  guardandoNuevo.value = true;
+  try {
+    const { error: insertError } = await supabase.from("ejercicios").insert({
+      nombre: nuevoEjercicio.value.trim().toUpperCase(),
+      tipo_id: 5,
+    });
+
+    if (insertError) throw insertError;
+
+    mensajeExito.value = "Ejercicio creado correctamente";
+    setTimeout(() => {
+      mensajeExito.value = "";
+    }, 3000);
+
+    nuevoEjercicio.value = "";
+    await cargarEjercicios();
+  } catch (err) {
+    error.value = "Error al crear ejercicio";
+    console.error(err);
+  } finally {
+    guardandoNuevo.value = false;
+  }
+};
+
+const eliminarEjercicio = async (ejercicio) => {
+  if (
+    !confirm(
+      `¿Eliminar "${ejercicio.nombre}"? Esto también puede afectar a otros datos.`,
+    )
+  ) {
+    return;
+  }
+
+  try {
+    const { error: deleteError } = await supabase
+      .from("ejercicios")
+      .delete()
+      .eq("id", ejercicio.id);
+
+    if (deleteError) throw deleteError;
+
+    mensajeExito.value = "Ejercicio eliminado";
+    setTimeout(() => {
+      mensajeExito.value = "";
+    }, 3000);
+
+    await cargarEjercicios();
+  } catch (err) {
+    error.value = "Error al eliminar ejercicio";
+    console.error(err);
+  }
+};
+
+const cargarEjercicios = async () => {
   try {
     loading.value = true;
     ejercicios.value = await userRmService.getHalterofilia();
@@ -56,6 +125,10 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
+};
+
+onMounted(async () => {
+  await cargarEjercicios();
 });
 </script>
 
@@ -133,7 +206,38 @@ onMounted(async () => {
         <div
           class="w-1 h-8 bg-gradient-to-b from-cyan-500 to-blue-500 rounded-full"
         ></div>
-        <h2 class="text-2xl font-bold text-white">RM Ejercicios Halterofilia</h2>
+        <h2 class="text-2xl font-bold text-white">
+          RM Ejercicios Halterofilia
+        </h2>
+      </div>
+
+      <div
+        v-if="mensajeExito"
+        class="bg-green-500/20 border border-green-500/50 text-green-200 px-4 py-3 rounded-lg mb-6"
+      >
+        {{ mensajeExito }}
+      </div>
+
+      <div
+        class="bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl p-4 mb-6"
+      >
+        <h3 class="text-white font-medium mb-3">Añadir nuevo ejercicio</h3>
+        <div class="flex gap-3">
+          <input
+            v-model="nuevoEjercicio"
+            type="text"
+            placeholder="Nombre del ejercicio"
+            class="flex-1 px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-cyan-500"
+            @keyup.enter="crearEjercicio"
+          />
+          <button
+            @click="crearEjercicio"
+            :disabled="!nuevoEjercicio.trim() || guardandoNuevo"
+            class="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
+          >
+            {{ guardandoNuevo ? "..." : "Añadir" }}
+          </button>
+        </div>
       </div>
 
       <div v-if="loading" class="flex justify-center py-16">
@@ -180,6 +284,27 @@ onMounted(async () => {
               class="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
             >
               {{ saving[ejercicio.id] ? "..." : "Guardar" }}
+            </button>
+            <button
+              v-if="puedeBorrar"
+              @click="eliminarEjercicio(ejercicio)"
+              class="p-2 text-red-400 hover:text-red-300"
+              title="Eliminar ejercicio"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
             </button>
           </div>
         </div>

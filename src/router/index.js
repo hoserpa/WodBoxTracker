@@ -37,15 +37,21 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/halterofilia/calculadora",
-    name: "HalterofiliaCalculadora",
-    component: () => import("@/views/HalterofiliaCalculadoraView.vue"),
+    path: "/halterofilia/entrenamiento",
+    name: "HalterofiliaEntrenamiento",
+    component: () => import("@/views/HalterofiliaEntrenamientoView.vue"),
     meta: { requiresAuth: true },
   },
   {
     path: "/halterofilia/rm-ejercicios",
     name: "HalterofiliaRmEjercicios",
     component: () => import("@/views/HalterofiliaRmEjerciciosView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/halterofilia/historial",
+    name: "HalterofiliaHistorial",
+    component: () => import("@/views/HalterofiliaHistorialView.vue"),
     meta: { requiresAuth: true },
   },
   {
