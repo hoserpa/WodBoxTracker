@@ -1,15 +1,18 @@
 <script setup>
 /* global setTimeout */
 import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { userRmService } from "@/services/user_rm";
 import { halterofiliaService } from "@/services/halterofilia_entrenamiento";
 
 const router = useRouter();
+const route = useRoute();
 const ejercicios = ref([]);
 const loading = ref(true);
 const saving = ref(false);
 const error = ref("");
+const editMode = ref(false);
+const entrenamientoId = ref(null);
 
 const ejercicioSeleccionado = ref("");
 const numRondas = ref(1);
@@ -27,13 +30,18 @@ const ejerciciosAñadidos = ref([]);
 const ejercicioActual = ref(null);
 const notas = ref("");
 const mensajeExito = ref("");
+const fecha = ref("");
 
 const goToOpciones = () => {
   router.push("/opciones");
 };
 
 const goBack = () => {
-  router.push("/halterofilia");
+  if (editMode.value) {
+    router.push("/halterofilia/historial");
+  } else {
+    router.push("/halterofilia");
+  }
 };
 
 const getRmPorEjercicio = (ejercicioId) => {
@@ -144,6 +152,10 @@ const eliminarEjercicio = (index) => {
   ejerciciosAñadidos.value.splice(index, 1);
 };
 
+const eliminarRondaEdit = (ejercicio, rIndex) => {
+  ejercicio.rondas.splice(rIndex, 1);
+};
+
 const guardarEntrenamiento = async () => {
   if (ejerciciosAñadidos.value.length === 0) {
     error.value = "Añade al menos un ejercicio";
@@ -159,17 +171,30 @@ const guardarEntrenamiento = async () => {
       rondas: e.rondas,
     }));
 
-    await halterofiliaService.create({
-      notas: notas.value || null,
-      ejercicios: ejerciciosParaGuardar,
-    });
+    if (editMode.value && entrenamientoId.value) {
+      await halterofiliaService.update(entrenamientoId.value, {
+        notas: notas.value || null,
+        fecha: fecha.value || null,
+        ejercicios: ejerciciosParaGuardar,
+      });
+      mensajeExito.value = "Entrenamiento actualizado correctamente";
+    } else {
+      await halterofiliaService.create({
+        notas: notas.value || null,
+        ejercicios: ejerciciosParaGuardar,
+      });
+      mensajeExito.value = "Entrenamiento guardado correctamente";
+      ejerciciosAñadidos.value = [];
+      notas.value = "";
+    }
 
-    ejerciciosAñadidos.value = [];
-    notas.value = "";
-    mensajeExito.value = "Entrenamiento guardado correctamente";
     setTimeout(() => {
       mensajeExito.value = "";
     }, 3000);
+
+    if (editMode.value) {
+      router.push("/halterofilia/historial");
+    }
   } catch (err) {
     error.value = "Error al guardar entrenamiento";
     console.error(err);
@@ -182,6 +207,25 @@ onMounted(async () => {
   try {
     loading.value = true;
     ejercicios.value = await userRmService.getHalterofilia();
+
+    if (route.params.id) {
+      editMode.value = true;
+      entrenamientoId.value = route.params.id;
+      const data = await halterofiliaService.getById(entrenamientoId.value);
+      notas.value = data.notas || "";
+      fecha.value = data.fecha || "";
+      ejerciciosAñadidos.value = data.ejercicios.map((e) => ({
+        ejercicio_id: e.ejercicio_id,
+        nombre_ejercicio: e.nombre_ejercicio,
+        rm: e.rm || null,
+        rondas: e.rondas.map((r) => ({
+          repeticiones: r.repeticiones,
+          series: r.series,
+          porcentaje: r.porcentaje,
+          peso: r.peso || calcularPeso(e.ejercicio_id, r.porcentaje),
+        })),
+      }));
+    }
   } catch (err) {
     error.value = "Error al cargar ejercicios";
     console.error(err);
@@ -266,7 +310,7 @@ onMounted(async () => {
           class="w-1 h-8 bg-gradient-to-b from-amber-500 to-orange-500 rounded-full"
         ></div>
         <h2 class="text-2xl font-bold text-white">
-          Entrenamiento Halterofilia
+          {{ editMode ? "Editar" : "Nuevo" }} Entrenamiento Halterofilia
         </h2>
       </div>
 
@@ -542,7 +586,90 @@ onMounted(async () => {
                   </svg>
                 </button>
               </div>
-              <div class="space-y-2">
+              <div v-if="editMode" class="space-y-3">
+                <div
+                  v-for="(ronda, rIndex) in ejercicio.rondas"
+                  :key="rIndex"
+                  class="bg-white/5 rounded-xl p-3"
+                >
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-white/80 font-medium text-sm">Ronda {{ rIndex + 1 }}</span>
+                    <button
+                      @click="eliminarRondaEdit(ejercicio, rIndex)"
+                      class="p-1 text-red-400 hover:text-red-300"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div class="grid grid-cols-3 gap-2">
+                    <div>
+                      <label class="block text-white/60 text-xs text-center mb-1">Reps</label>
+                      <div class="flex items-center justify-center gap-1">
+                        <button
+                          @click="decrementarRep(ronda)"
+                          :disabled="ronda.repeticiones <= 1"
+                          class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+                        >-</button>
+                        <span class="w-8 text-center text-white font-medium">{{ ronda.repeticiones }}</span>
+                        <button
+                          @click="incrementarRep(ronda)"
+                          class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center"
+                        >+</button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label class="block text-white/60 text-xs text-center mb-1">Series</label>
+                      <div class="flex items-center justify-center gap-1">
+                        <button
+                          @click="decrementarSeries(ronda)"
+                          :disabled="ronda.series <= 1"
+                          class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+                        >-</button>
+                        <span class="w-8 text-center text-white font-medium">{{ ronda.series }}</span>
+                        <button
+                          @click="incrementarSeries(ronda)"
+                          class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center"
+                        >+</button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label class="block text-white/60 text-xs text-center mb-1">%</label>
+                      <div class="flex items-center justify-center gap-1">
+                        <button
+                          @click="decrementarPorc(ronda)"
+                          :disabled="ronda.porcentaje <= 50"
+                          class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+                        >-</button>
+                        <span class="w-8 text-center text-white font-medium">{{ ronda.porcentaje }}</span>
+                        <button
+                          @click="incrementarPorc(ronda)"
+                          :disabled="ronda.porcentaje >= 100"
+                          class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+                        >+</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mt-2 text-center">
+                    <div class="flex items-center justify-center gap-2">
+                      <input
+                        v-model.number="ronda.peso"
+                        type="number"
+                        step="0.5"
+                        class="w-20 px-2 py-1 bg-white/10 border border-white/20 rounded text-amber-300 text-sm text-center focus:outline-none focus:border-amber-500"
+                      />
+                      <span class="text-white/60 text-sm">kg</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div v-else class="space-y-2">
                 <div
                   v-for="(ronda, rIndex) in ejercicio.rondas"
                   :key="rIndex"
@@ -566,6 +693,15 @@ onMounted(async () => {
           </div>
 
           <div class="mt-6 space-y-4">
+            <div v-if="editMode">
+              <label class="block text-white font-medium mb-2"> Fecha </label>
+              <input
+                v-model="fecha"
+                type="date"
+                class="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-amber-500"
+              />
+            </div>
+
             <div>
               <label class="block text-white font-medium mb-2"> Notas </label>
               <textarea
@@ -581,7 +717,7 @@ onMounted(async () => {
               :disabled="saving"
               class="w-full px-4 py-3 bg-green-500 hover:bg-green-600 disabled:bg-green-500/50 text-white font-bold rounded-lg transition-colors"
             >
-              {{ saving ? "Guardando..." : "Guardar Entrenamiento" }}
+              {{ saving ? "Guardando..." : editMode ? "Actualizar Entrenamiento" : "Guardar Entrenamiento" }}
             </button>
           </div>
         </div>

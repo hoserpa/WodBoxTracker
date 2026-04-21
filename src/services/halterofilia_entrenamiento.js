@@ -189,4 +189,82 @@ export const halterofiliaService = {
       throw error;
     }
   },
+
+  async update(id, entrenamiento) {
+    const authStore = useAuthStore();
+    const userId = authStore.user?.id;
+
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
+    const { notas, ejercicios, fecha } = entrenamiento;
+
+    const { error: updateError } = await supabase
+      .from("halterofilia_entrenamientos")
+      .update({
+        notas: notas || null,
+        fecha: fecha || null,
+      })
+      .eq("id", id)
+      .eq("user_id", userId);
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    const { data: ejerciciosExistentes, error: ejerciciosError } = await supabase
+      .from("halterofilia_ejercicios")
+      .select("id")
+      .eq("entrenamiento_id", id);
+
+    if (!ejerciciosError && ejerciciosExistentes) {
+      const ejercicioIds = ejerciciosExistentes.map((e) => e.id);
+      if (ejercicioIds.length > 0) {
+        await supabase.from("halterofilia_rondas").delete().in("ejercicio_entrenamiento_id", ejercicioIds);
+      }
+      await supabase.from("halterofilia_ejercicios").delete().eq("entrenamiento_id", id);
+    }
+
+    if (ejercicios && ejercicios.length > 0) {
+      for (let i = 0; i < ejercicios.length; i++) {
+        const ejercicio = ejercicios[i];
+
+        const { data: ejercicioData, error: ejercicioError } = await supabase
+          .from("halterofilia_ejercicios")
+          .insert({
+            entrenamiento_id: id,
+            ejercicio_id: ejercicio.ejercicio_id,
+            orden: i,
+          })
+          .select()
+          .single();
+
+        if (ejercicioError) {
+          throw ejercicioError;
+        }
+
+        if (ejercicio.rondas && ejercicio.rondas.length > 0) {
+          const rondasData = ejercicio.rondas.map((ronda, j) => ({
+            ejercicio_entrenamiento_id: ejercicioData.id,
+            repeticiones: ronda.repeticiones,
+            series: ronda.series,
+            porcentaje: ronda.porcentaje,
+            peso: ronda.peso || null,
+            orden: j,
+          }));
+
+          const { error: rondasError } = await supabase
+            .from("halterofilia_rondas")
+            .insert(rondasData);
+
+          if (rondasError) {
+            throw rondasError;
+          }
+        }
+      }
+    }
+
+    return { id, notas, ejercicios };
+  },
 };

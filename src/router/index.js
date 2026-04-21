@@ -55,6 +55,12 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/halterofilia/entrenamiento/:id/editar",
+    name: "HalterofiliaEditarEntrenamiento",
+    component: () => import("@/views/HalterofiliaEntrenamientoView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/opciones",
     name: "Opciones",
     component: () => import("@/views/OpcionesView.vue"),
