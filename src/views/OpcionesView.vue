@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import { useQueryClient } from "@tanstack/vue-query";
 import { useAuthStore } from "@/stores/auth";
 import { diaCompletadoService } from "@/services/diaCompletado";
+import InstallPwaButton from "@/components/InstallPwaButton.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -255,6 +256,8 @@ const reloadCache = async () => {
             </form>
           </div>
         </div>
+
+        <InstallPwaButton variant="card" />
 
         <button
           @click="logout"
