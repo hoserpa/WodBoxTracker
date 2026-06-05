@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useQueryClient } from "@tanstack/vue-query";
 import { useAuthStore } from "@/stores/auth";
@@ -8,8 +9,44 @@ const router = useRouter();
 const authStore = useAuthStore();
 const queryClient = useQueryClient();
 
+const showChangePassword = ref(false);
+const newPassword = ref("");
+const confirmPassword = ref("");
+const passwordLoading = ref(false);
+const passwordError = ref("");
+const passwordSuccess = ref(false);
+
 const goBack = () => {
   router.push("/");
+};
+
+const changePassword = async () => {
+  passwordError.value = "";
+  passwordSuccess.value = false;
+
+  if (newPassword.value.length < 6) {
+    passwordError.value = "Mínimo 6 caracteres";
+    return;
+  }
+
+  if (newPassword.value !== confirmPassword.value) {
+    passwordError.value = "Las contraseñas no coinciden";
+    return;
+  }
+
+  passwordLoading.value = true;
+
+  try {
+    await authStore.updatePassword(newPassword.value);
+    passwordSuccess.value = true;
+    newPassword.value = "";
+    confirmPassword.value = "";
+    showChangePassword.value = false;
+  } catch (err) {
+    passwordError.value = err.message;
+  } finally {
+    passwordLoading.value = false;
+  }
 };
 
 const logout = async () => {
@@ -124,6 +161,100 @@ const reloadCache = async () => {
             Quitar todas las marcas de días hechos
           </p>
         </button>
+
+        <div>
+          <button
+            @click="showChangePassword = !showChangePassword"
+            class="w-full group relative overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-600 to-teal-600 p-5 text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/30"
+          >
+            <div
+              class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-white pr-16">
+              Cambiar contrase&ntilde;a
+            </h3>
+            <p class="text-white/70 text-sm mt-1">
+              Actualizar tu contrase&ntilde;a de acceso
+            </p>
+          </button>
+
+          <div
+            v-if="showChangePassword"
+            class="mt-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-5 overflow-hidden transition-all"
+          >
+            <form @submit.prevent="changePassword" class="space-y-4">
+              <div
+                v-if="passwordError"
+                class="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-xl text-sm"
+              >
+                {{ passwordError }}
+              </div>
+              <div
+                v-if="passwordSuccess"
+                class="bg-emerald-500/20 border border-emerald-500/50 text-emerald-200 px-4 py-3 rounded-xl text-sm"
+              >
+                Contraseña actualizada correctamente
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-white/70 mb-2"
+                  >Nueva contraseña</label
+                >
+                <input
+                  v-model="newPassword"
+                  type="password"
+                  required
+                  minlength="6"
+                  class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                  placeholder="Mínimo 6 caracteres"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-white/70 mb-2"
+                  >Confirmar contraseña</label
+                >
+                <input
+                  v-model="confirmPassword"
+                  type="password"
+                  required
+                  minlength="6"
+                  class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                  placeholder="Repite la contraseña"
+                />
+              </div>
+
+              <button
+                type="submit"
+                :disabled="passwordLoading"
+                class="w-full py-3 px-4 bg-gradient-to-r from-cyan-600 to-teal-600 text-white font-bold rounded-xl hover:from-cyan-500 hover:to-teal-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <div
+                  v-if="passwordLoading"
+                  class="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"
+                ></div>
+                <span>{{
+                  passwordLoading ? "Guardando..." : "Guardar contraseña"
+                }}</span>
+              </button>
+            </form>
+          </div>
+        </div>
 
         <button
           @click="logout"

@@ -13,6 +13,16 @@ const routes = [
     component: () => import("@/views/LoginView.vue"),
   },
   {
+    path: "/forgot-password",
+    name: "ForgotPassword",
+    component: () => import("@/views/ForgotPasswordView.vue"),
+  },
+  {
+    path: "/update-password",
+    name: "UpdatePassword",
+    component: () => import("@/views/UpdatePasswordView.vue"),
+  },
+  {
     path: "/benchmarks",
     name: "Benchmarks",
     component: () => import("@/views/BenchmarksView.vue"),
@@ -84,6 +94,11 @@ const routes = [
     component: () => import("@/views/DiaView.vue"),
     meta: { requiresAuth: true },
   },
+  {
+    path: "/:pathMatch(.*)*",
+    name: "AuthCallback",
+    redirect: "/",
+  },
 ];
 
 const router = createRouter({
@@ -98,7 +113,9 @@ router.beforeEach(async (to, from, next) => {
     await authStore.initAuth();
   }
 
-  if (to.meta.requiresAuth && !authStore.user) {
+  if (authStore.isRecoveryMode && to.name !== "UpdatePassword") {
+    next({ name: "UpdatePassword" });
+  } else if (to.meta.requiresAuth && !authStore.user) {
     next({ name: "Login" });
   } else if (to.name === "Login" && authStore.user) {
     next({ name: "Home" });

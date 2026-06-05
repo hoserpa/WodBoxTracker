@@ -1,23 +1,21 @@
 <script setup>
 import { ref } from "vue";
-import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 
-const router = useRouter();
 const authStore = useAuthStore();
 
 const email = ref("");
-const password = ref("");
 const loading = ref(false);
 const error = ref("");
+const sent = ref(false);
 
 const handleSubmit = async () => {
   error.value = "";
   loading.value = true;
 
   try {
-    await authStore.signIn(email.value, password.value);
-    router.push("/");
+    await authStore.resetPassword(email.value);
+    sent.value = true;
   } catch (err) {
     error.value = err.message;
   } finally {
@@ -40,15 +38,17 @@ const handleSubmit = async () => {
         <h1
           class="text-3xl font-bold bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent"
         >
-          Box Tracker
+          Recuperar contrase&ntilde;a
         </h1>
-        <p class="text-white/50 mt-2">Inicia sesión para continuar</p>
+        <p class="text-white/50 mt-2">
+          Te enviaremos un link para restablecerla
+        </p>
       </div>
 
       <div
         class="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-2xl"
       >
-        <form @submit.prevent="handleSubmit" class="space-y-5">
+        <form v-if="!sent" @submit.prevent="handleSubmit" class="space-y-5">
           <div
             v-if="error"
             class="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-xl"
@@ -69,27 +69,6 @@ const handleSubmit = async () => {
             />
           </div>
 
-          <div>
-            <label class="block text-sm font-medium text-white/70 mb-2"
-              >Contraseña</label
-            >
-            <input
-              v-model="password"
-              type="password"
-              required
-              class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
-              placeholder="••••••••"
-            />
-            <div class="text-right mt-2">
-              <router-link
-                to="/forgot-password"
-                class="text-sm text-violet-400 hover:text-violet-300 transition-colors"
-              >
-                ¿Olvidaste tu contraseña?
-              </router-link>
-            </div>
-          </div>
-
           <button
             type="submit"
             :disabled="loading"
@@ -99,12 +78,39 @@ const handleSubmit = async () => {
               v-if="loading"
               class="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"
             ></div>
-            <span>{{ loading ? "Iniciando..." : "Iniciar Sesión" }}</span>
+            <span>{{
+              loading
+                ? "Enviando..."
+                : "Enviar link de recuperaci&oacute;n"
+            }}</span>
           </button>
         </form>
+
+        <div v-else class="text-center space-y-5">
+          <div
+            class="bg-emerald-500/20 border border-emerald-500/50 text-emerald-200 px-4 py-3 rounded-xl"
+          >
+            Revisa tu email. Si existe una cuenta asociada a
+            <strong>{{ email }}</strong
+            >, recibir&aacute;s un link para restablecer tu contrase&ntilde;a.
+          </div>
+          <button
+            @click="sent = false"
+            class="text-violet-400 hover:text-violet-300 transition-colors text-sm"
+          >
+            Enviar de nuevo
+          </button>
+        </div>
       </div>
 
-      <p class="text-center text-white/30 text-sm mt-6">Powered by WodBox</p>
+      <div class="text-center mt-6">
+        <router-link
+          to="/login"
+          class="text-violet-400 hover:text-violet-300 transition-colors text-sm"
+        >
+          Volver al inicio de sesi&oacute;n
+        </router-link>
+      </div>
     </div>
   </div>
 </template>
