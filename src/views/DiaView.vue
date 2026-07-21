@@ -9,6 +9,7 @@ import { registroService } from "@/services/registro";
 import { diaCompletadoService } from "@/services/diaCompletado";
 import { userRmService } from "@/services/user_rm";
 import { extraerRPE, calcularPesoSugerido } from "@/utils/rpeCalculator";
+import ExerciseDetailModal from "@/components/ExerciseDetailModal.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -27,6 +28,7 @@ const registros = ref({});
 const saving = ref({});
 const completado = ref(false);
 const rmMap = ref({});
+const selectedDetailId = ref(null);
 
 const tipoLabels = {
   principal: "Ejercicios Principales",
@@ -63,6 +65,7 @@ const ejerciciosPorTipo = computed(() => {
       if (!ejercicioMap[ejId]) {
         const newEjercicio = {
           nombre: s.ejercicio?.nombre,
+          exerciseDetailId: s.ejercicio?.exercise_detail_id,
           series: [],
         };
         ejercicioMap[ejId] = newEjercicio;
@@ -332,6 +335,27 @@ const toggleCompletado = async () => {
                   class="font-bold text-white text-lg flex items-center gap-2"
                 >
                   {{ ejercicio.nombre }}
+                  <button
+                    v-if="ejercicio.exerciseDetailId"
+                    @click="selectedDetailId = ejercicio.exerciseDetailId"
+                    class="text-violet-400 hover:text-violet-300 transition-colors"
+                    title="Ver detalles del ejercicio"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </button>
                   <a
                     v-if="ejercicio.series[0]?.ejercicio?.url"
                     :href="ejercicio.series[0].ejercicio.url"
@@ -412,5 +436,11 @@ const toggleCompletado = async () => {
         </div>
       </div>
     </main>
+
+    <ExerciseDetailModal
+      v-if="selectedDetailId"
+      :exercise-detail-id="selectedDetailId"
+      @close="selectedDetailId = null"
+    />
   </div>
 </template>
