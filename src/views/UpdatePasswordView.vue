@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { mensajeAuthError } from "@/utils/authErrors";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -17,8 +18,8 @@ const isFromInvite = authStore.isRecoveryMode;
 const handleSubmit = async () => {
   error.value = "";
 
-  if (password.value.length < 6) {
-    error.value = "La contraseña debe tener al menos 6 caracteres";
+  if (password.value.length < 8) {
+    error.value = "La contraseña debe tener al menos 8 caracteres";
     return;
   }
 
@@ -36,7 +37,7 @@ const handleSubmit = async () => {
       router.push("/login");
     }, 2000);
   } catch (err) {
-    error.value = err.message;
+    error.value = mensajeAuthError(err);
   } finally {
     loading.value = false;
   }
@@ -88,9 +89,9 @@ const handleSubmit = async () => {
               v-model="password"
               type="password"
               required
-              minlength="6"
+              minlength="8"
               class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
-              placeholder="M&iacute;nimo 6 caracteres"
+              placeholder="M&iacute;nimo 8 caracteres"
             />
           </div>
 
@@ -102,7 +103,7 @@ const handleSubmit = async () => {
               v-model="confirmPassword"
               type="password"
               required
-              minlength="6"
+              minlength="8"
               class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
               placeholder="Repite la contrase&ntilde;a"
             />

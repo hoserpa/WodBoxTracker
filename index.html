@@ -14,16 +14,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="WodBox" />
     <title>WodBox Tracker</title>
+    <!-- injected-csp-meta -->
   </head>
   <body>
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
-    <script>
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker.register("/sw.js");
-        });
-      }
-    </script>
+    <script src="./sw-register.js"></script>
   </body>
 </html>

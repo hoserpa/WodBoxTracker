@@ -173,14 +173,14 @@ const guardarEntrenamiento = async () => {
 
     if (editMode.value && entrenamientoId.value) {
       await halterofiliaService.update(entrenamientoId.value, {
-        notas: notas.value || null,
+        notas: notas.value?.trim().slice(0, 1000) || null,
         fecha: fecha.value || null,
         ejercicios: ejerciciosParaGuardar,
       });
       mensajeExito.value = "Entrenamiento actualizado correctamente";
     } else {
       await halterofiliaService.create({
-        notas: notas.value || null,
+        notas: notas.value?.trim().slice(0, 1000) || null,
         ejercicios: ejerciciosParaGuardar,
       });
       mensajeExito.value = "Entrenamiento guardado correctamente";
@@ -707,6 +707,7 @@ onMounted(async () => {
               <textarea
                 v-model="notas"
                 rows="2"
+                maxlength="1000"
                 placeholder="Observaciones del entrenamiento..."
                 class="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-amber-500 resize-none"
               ></textarea>

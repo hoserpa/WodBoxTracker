@@ -1,25 +1,16 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { useAuthStore } from "@/stores/auth";
 import { rutinaService } from "@/services/rutina";
 import WodDiaCard from "@/components/WodDiaCard.vue";
 
 const router = useRouter();
-const authStore = useAuthStore();
 const rutinas = ref([]);
 const loading = ref(true);
 const error = ref("");
 
-onMounted(async () => {
-  await authStore.initAuth();
-
-  if (!authStore.user) {
-    router.push("/login");
-    return;
-  }
-
-  await loadRutinas();
+onMounted(() => {
+  loadRutinas();
 });
 
 const loadRutinas = async () => {

@@ -22,6 +22,12 @@ const puedeBorrar = computed(() => {
   return user.value?.email === "joraalgo@gmail.com";
 });
 
+const puedeBorrarEjercicio = (ejercicio) => {
+  if (!user.value) return false;
+  if (ejercicio.user_id) return ejercicio.user_id === user.value.id;
+  return puedeBorrar.value;
+};
+
 const goToOpciones = () => {
   router.push("/opciones");
 };
@@ -57,12 +63,13 @@ const saveRm = async (ejercicio) => {
 };
 
 const crearEjercicio = async () => {
-  if (!nuevoEjercicio.value.trim()) return;
+  const nombre = nuevoEjercicio.value.trim().slice(0, 100);
+  if (!nombre) return;
 
   guardandoNuevo.value = true;
   try {
     const { error: insertError } = await supabase.from("ejercicios").insert({
-      nombre: nuevoEjercicio.value.trim().toUpperCase(),
+      nombre: nombre.toUpperCase(),
       tipo_id: 5,
     });
 
@@ -84,13 +91,15 @@ const crearEjercicio = async () => {
 };
 
 const eliminarEjercicio = async (ejercicio) => {
-  if (
-    !confirm(
-      `¿Eliminar "${ejercicio.nombre}"? Esto también puede afectar a otros datos.`,
-    )
-  ) {
+  const mensajeConfirmacion = ejercicio.user_id
+    ? `¿Eliminar tu ejercicio privado "${ejercicio.nombre}"?`
+    : `¿Eliminar "${ejercicio.nombre}"? Esto también puede afectar a otros datos.`;
+
+  if (!confirm(mensajeConfirmacion)) {
     return;
   }
+
+  error.value = "";
 
   try {
     const { error: deleteError } = await supabase
@@ -107,7 +116,10 @@ const eliminarEjercicio = async (ejercicio) => {
 
     await cargarEjercicios();
   } catch (err) {
-    error.value = "Error al eliminar ejercicio";
+    error.value =
+      err?.code === "23503"
+        ? "No se puede eliminar: el ejercicio está en uso en entrenamientos guardados"
+        : "Error al eliminar ejercicio";
     console.error(err);
   }
 };
@@ -226,6 +238,7 @@ onMounted(async () => {
           <input
             v-model="nuevoEjercicio"
             type="text"
+            maxlength="100"
             placeholder="Nombre del ejercicio"
             class="flex-1 px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-cyan-500"
             @keyup.enter="crearEjercicio"
@@ -260,8 +273,14 @@ onMounted(async () => {
           class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-4"
         >
           <div class="flex-1">
-            <h3 class="text-white font-semibold text-lg">
+            <h3 class="text-white font-semibold text-lg flex items-center gap-2">
               {{ ejercicio.nombre }}
+              <span
+                v-if="ejercicio.user_id"
+                class="text-[10px] font-bold uppercase tracking-wide text-cyan-300 bg-cyan-500/20 px-1.5 py-0.5 rounded"
+              >
+                Privado
+              </span>
             </h3>
             <p v-if="ejercicio.fecha" class="text-white/50 text-sm">
               Última marca: {{ ejercicio.rm }} kg -
@@ -286,7 +305,7 @@ onMounted(async () => {
               {{ saving[ejercicio.id] ? "..." : "Guardar" }}
             </button>
             <button
-              v-if="puedeBorrar"
+              v-if="puedeBorrarEjercicio(ejercicio)"
               @click="eliminarEjercicio(ejercicio)"
               class="p-2 text-red-400 hover:text-red-300"
               title="Eliminar ejercicio"

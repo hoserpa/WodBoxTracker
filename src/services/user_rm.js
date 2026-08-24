@@ -62,7 +62,7 @@ export const userRmService = {
 
     const { data: ejercicios, error: errorEjercicios } = await supabase
       .from("ejercicios")
-      .select("id, nombre, tipo_id")
+      .select("id, nombre, tipo_id, user_id")
       .eq("tipo_id", tipoId)
       .order("nombre");
 
@@ -108,7 +108,7 @@ export const userRmService = {
     const { data: halterofiliaEjercicios, error: errorHalterofilia } =
       await supabase
         .from("ejercicios")
-        .select("id, nombre, tipo_id")
+        .select("id, nombre, tipo_id, user_id")
         .eq("tipo_id", 5)
         .order("nombre");
 
@@ -120,7 +120,7 @@ export const userRmService = {
     // Query 2: Ejercicios con nombres "BACK SQUAT" y "FRONT SQUAT" (tipo_id = 2 - principal)
     const { data: squatEjercicios, error: errorSquat } = await supabase
       .from("ejercicios")
-      .select("id, nombre, tipo_id")
+      .select("id, nombre, tipo_id, user_id")
       .eq("tipo_id", 2)
       .in("nombre", ["BACK SQUAT", "FRONT SQUAT"])
       .order("nombre");

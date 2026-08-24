@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import { useAuthStore } from "@/stores/auth";
+import { mensajeAuthError } from "@/utils/authErrors";
 
 const authStore = useAuthStore();
 
@@ -17,7 +18,7 @@ const handleSubmit = async () => {
     await authStore.resetPassword(email.value);
     sent.value = true;
   } catch (err) {
-    error.value = err.message;
+    error.value = mensajeAuthError(err);
   } finally {
     loading.value = false;
   }

@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/vue-query";
 import { useAuthStore } from "@/stores/auth";
 import { diaCompletadoService } from "@/services/diaCompletado";
 import InstallPwaButton from "@/components/InstallPwaButton.vue";
+import { mensajeAuthError } from "@/utils/authErrors";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -25,8 +26,8 @@ const changePassword = async () => {
   passwordError.value = "";
   passwordSuccess.value = false;
 
-  if (newPassword.value.length < 6) {
-    passwordError.value = "Mínimo 6 caracteres";
+  if (newPassword.value.length < 8) {
+    passwordError.value = "Mínimo 8 caracteres";
     return;
   }
 
@@ -44,7 +45,7 @@ const changePassword = async () => {
     confirmPassword.value = "";
     showChangePassword.value = false;
   } catch (err) {
-    passwordError.value = err.message;
+    passwordError.value = mensajeAuthError(err);
   } finally {
     passwordLoading.value = false;
   }
@@ -220,9 +221,9 @@ const reloadCache = async () => {
                   v-model="newPassword"
                   type="password"
                   required
-                  minlength="6"
+                  minlength="8"
                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Mínimo 8 caracteres"
                 />
               </div>
 
@@ -234,7 +235,7 @@ const reloadCache = async () => {
                   v-model="confirmPassword"
                   type="password"
                   required
-                  minlength="6"
+                  minlength="8"
                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
                   placeholder="Repite la contraseña"
                 />

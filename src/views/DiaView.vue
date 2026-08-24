@@ -37,6 +37,8 @@ const tipoLabels = {
   core: "Core",
 };
 
+const esUrlSegura = (url) => /^https?:\/\//i.test(url);
+
 const tipoColors = {
   principal: "from-violet-500 to-purple-600",
   secundario: "from-cyan-500 to-blue-600",
@@ -152,7 +154,8 @@ const getPesoSugerido = (serie) => {
 };
 
 const saveWeight = async (serieId, peso) => {
-  if (!peso || isNaN(peso)) return;
+  if (peso === null || peso === "" || isNaN(peso)) return;
+  if (Number(peso) < 0) return;
 
   saving.value[serieId] = true;
   try {
@@ -357,7 +360,7 @@ const toggleCompletado = async () => {
                     </svg>
                   </button>
                   <a
-                    v-if="ejercicio.series[0]?.ejercicio?.url"
+                    v-if="esUrlSegura(ejercicio.series[0]?.ejercicio?.url || '')"
                     :href="ejercicio.series[0].ejercicio.url"
                     target="_blank"
                     rel="noopener noreferrer"

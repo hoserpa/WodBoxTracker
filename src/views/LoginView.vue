@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { mensajeAuthError } from "@/utils/authErrors";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -19,7 +20,7 @@ const handleSubmit = async () => {
     await authStore.signIn(email.value, password.value);
     router.push("/");
   } catch (err) {
-    error.value = err.message;
+    error.value = mensajeAuthError(err);
   } finally {
     loading.value = false;
   }
