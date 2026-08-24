@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { rutinaService } from "@/services/rutina";
+import WodDiaCard from "@/components/WodDiaCard.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -112,6 +113,15 @@ const getGradient = (index) => {
     </header>
 
     <main class="max-w-7xl mx-auto py-8 px-4">
+      <div class="flex items-center gap-3 mb-8">
+        <div
+          class="w-1 h-8 bg-gradient-to-b from-emerald-500 to-teal-500 rounded-full"
+        ></div>
+        <h2 class="text-2xl font-bold text-white">WOD</h2>
+      </div>
+
+      <WodDiaCard class="mb-12" />
+
       <div class="flex items-center gap-3 mb-8">
         <div
           class="w-1 h-8 bg-gradient-to-b from-violet-500 to-cyan-500 rounded-full"

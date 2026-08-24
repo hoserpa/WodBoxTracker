@@ -23,6 +23,12 @@ const routes = [
     component: () => import("@/views/UpdatePasswordView.vue"),
   },
   {
+    path: "/wod",
+    name: "Wod",
+    component: () => import("@/views/WodView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/benchmarks",
     name: "Benchmarks",
     component: () => import("@/views/BenchmarksView.vue"),
