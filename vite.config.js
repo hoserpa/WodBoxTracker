@@ -8,7 +8,7 @@ const CSP = [
   "default-src 'self'",
   "script-src 'self'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data:",
+  "img-src 'self' data: https://*.supabase.co",
   "font-src 'self'",
   "connect-src 'self' https://*.supabase.co",
   "worker-src 'self'",
