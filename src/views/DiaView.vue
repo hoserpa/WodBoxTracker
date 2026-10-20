@@ -31,33 +31,56 @@ const rmMap = ref({});
 const selectedDetailId = ref(null);
 
 const tipoLabels = {
+  calentamiento: "Calentamiento",
+  pliometria: "Pliometría",
   principal: "Ejercicios Principales",
   secundario: "Ejercicios Secundarios",
-  calentamiento: "Calentamiento",
   core: "Core",
 };
 
 const esUrlSegura = (url) => /^https?:\/\//i.test(url);
 
 const tipoColors = {
+  calentamiento: "from-orange-500 to-amber-600",
+  pliometria: "from-amber-500 to-orange-600",
   principal: "from-violet-500 to-purple-600",
   secundario: "from-cyan-500 to-blue-600",
-  calentamiento: "from-orange-500 to-amber-600",
   core: "from-rose-500 to-red-600",
 };
 
 const tiposEnDia = computed(() => {
   const tipos = new Set(series.value.map((s) => s.tipo_ejercicio));
-  const orden = ["calentamiento", "principal", "secundario", "core"];
+  const orden = ["calentamiento", "pliometria", "principal", "secundario", "core"];
   return orden.filter((t) => tipos.has(t));
 });
 
 const ejerciciosPorTipo = computed(() => {
   const grouped = {};
+  const allSeries = [...series.value].sort((a, b) => a.orden - b.orden);
+
   tiposEnDia.value.forEach((tipo) => {
-    const seriesTipo = series.value
-      .filter((s) => s.tipo_ejercicio === tipo)
-      .sort((a, b) => a.orden - b.orden);
+    let seriesTipo = allSeries.filter((s) => s.tipo_ejercicio === tipo);
+
+    if (tipo === "principal") {
+      const contrastes = allSeries.filter(
+        (s) =>
+          ((s.observaciones && s.observaciones.toLowerCase().includes("contraste")) ||
+            (s.ejercicio?.nombre && /BOX JUMP|W\.BALL|KB SWING RUSO|BAND ASSISTED PUSH UP/i.test(s.ejercicio.nombre)))
+      );
+      seriesTipo = [...seriesTipo, ...contrastes].sort((a, b) => a.orden - b.orden);
+    } else if (tipo === "calentamiento") {
+      seriesTipo = seriesTipo.filter(
+        (s) =>
+          !(s.observaciones && s.observaciones.toLowerCase().includes("contraste")) &&
+          !(s.ejercicio?.nombre && /BOX JUMP|W\.BALL|KB SWING RUSO|BAND ASSISTED PUSH UP/i.test(s.ejercicio.nombre))
+      );
+    } else if (tipo === "pliometria") {
+      seriesTipo = seriesTipo.filter(
+        (s) =>
+          !(s.observaciones && s.observaciones.toLowerCase().includes("contraste")) &&
+          !(s.ejercicio?.nombre && /BOX JUMP|W\.BALL|KB SWING RUSO|BAND ASSISTED PUSH UP/i.test(s.ejercicio.nombre))
+      );
+    }
 
     const ejercicioArray = [];
     const ejercicioMap = {};
