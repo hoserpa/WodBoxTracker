@@ -1,6 +1,63 @@
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores/auth";
 
+async function insertExercisesWithRounds(entrenamientoId, ejercicios) {
+  if (!ejercicios || ejercicios.length === 0) return;
+  for (let i = 0; i < ejercicios.length; i++) {
+    const ejercicio = ejercicios[i];
+    const { data: ejercicioData, error: ejercicioError } = await supabase
+      .from("halterofilia_ejercicios")
+      .insert({
+        entrenamiento_id: entrenamientoId,
+        ejercicio_id: ejercicio.ejercicio_id,
+        orden: i,
+      })
+      .select()
+      .single();
+    if (ejercicioError) throw ejercicioError;
+    if (ejercicio.rondas && ejercicio.rondas.length > 0) {
+      const rondasData = ejercicio.rondas.map((ronda, j) => ({
+        ejercicio_entrenamiento_id: ejercicioData.id,
+        repeticiones: ronda.repeticiones,
+        series: ronda.series,
+        porcentaje: ronda.porcentaje,
+        peso: ronda.peso || null,
+        orden: j,
+      }));
+      const { error: rondasError } = await supabase
+        .from("halterofilia_rondas")
+        .insert(rondasData);
+      if (rondasError) throw rondasError;
+    }
+  }
+}
+
+async function loadExercisesWithRounds(entrenamiento) {
+  const { data: ejerciciosData, error: ejerciciosError } = await supabase
+    .from("halterofilia_ejercicios")
+    .select(
+      `
+      *,
+      ejercicios (nombre)
+    `,
+    )
+    .eq("entrenamiento_id", entrenamiento.id)
+    .order("orden");
+  if (ejerciciosError || !ejerciciosData) return;
+  for (const ejercicio of ejerciciosData) {
+    const { data: rondasData, error: rondasError } = await supabase
+      .from("halterofilia_rondas")
+      .select("*")
+      .eq("ejercicio_entrenamiento_id", ejercicio.id)
+      .order("orden");
+    if (!rondasError) ejercicio.rondas = rondasData;
+  }
+  entrenamiento.ejercicios = ejerciciosData.map((e) => ({
+    ...e,
+    nombre_ejercicio: e.ejercicios?.nombre,
+  }));
+}
+
 export const halterofiliaService = {
   async create(entrenamiento) {
     const authStore = useAuthStore();
@@ -26,45 +83,7 @@ export const halterofiliaService = {
       throw entrenamientoError;
     }
 
-    if (ejercicios && ejercicios.length > 0) {
-      for (let i = 0; i < ejercicios.length; i++) {
-        const ejercicio = ejercicios[i];
-
-        const { data: ejercicioData, error: ejercicioError } = await supabase
-          .from("halterofilia_ejercicios")
-          .insert({
-            entrenamiento_id: entrenamientoData.id,
-            ejercicio_id: ejercicio.ejercicio_id,
-            orden: i,
-          })
-          .select()
-          .single();
-
-        if (ejercicioError) {
-          throw ejercicioError;
-        }
-
-        if (ejercicio.rondas && ejercicio.rondas.length > 0) {
-          const rondasData = ejercicio.rondas.map((ronda, j) => ({
-            ejercicio_entrenamiento_id: ejercicioData.id,
-            repeticiones: ronda.repeticiones,
-            series: ronda.series,
-            porcentaje: ronda.porcentaje,
-            peso: ronda.peso || null,
-            orden: j,
-          }));
-
-          const { error: rondasError } = await supabase
-            .from("halterofilia_rondas")
-            .insert(rondasData);
-
-          if (rondasError) {
-            throw rondasError;
-          }
-        }
-      }
-    }
-
+    await insertExercisesWithRounds(entrenamientoData.id, ejercicios);
     return entrenamientoData;
   },
 
@@ -87,34 +106,7 @@ export const halterofiliaService = {
     }
 
     for (const entrenamiento of entrenamientos) {
-      const { data: ejerciciosData, error: ejerciciosError } = await supabase
-        .from("halterofilia_ejercicios")
-        .select(
-          `
-          *,
-          ejercicios (nombre)
-        `,
-        )
-        .eq("entrenamiento_id", entrenamiento.id)
-        .order("orden");
-
-      if (!ejerciciosError && ejerciciosData) {
-        for (const ejercicio of ejerciciosData) {
-          const { data: rondasData, error: rondasError } = await supabase
-            .from("halterofilia_rondas")
-            .select("*")
-            .eq("ejercicio_entrenamiento_id", ejercicio.id)
-            .order("orden");
-
-          if (!rondasError) {
-            ejercicio.rondas = rondasData;
-          }
-        }
-        entrenamiento.ejercicios = ejerciciosData.map((e) => ({
-          ...e,
-          nombre_ejercicio: e.ejercicios?.nombre,
-        }));
-      }
+      await loadExercisesWithRounds(entrenamiento);
     }
 
     return entrenamientos;
@@ -139,35 +131,7 @@ export const halterofiliaService = {
       throw error;
     }
 
-    const { data: ejerciciosData, error: ejerciciosError } = await supabase
-      .from("halterofilia_ejercicios")
-      .select(
-        `
-        *,
-        ejercicios (nombre)
-      `,
-      )
-      .eq("entrenamiento_id", id)
-      .order("orden");
-
-    if (!ejerciciosError && ejerciciosData) {
-      for (const ejercicio of ejerciciosData) {
-        const { data: rondasData, error: rondasError } = await supabase
-          .from("halterofilia_rondas")
-          .select("*")
-          .eq("ejercicio_entrenamiento_id", ejercicio.id)
-          .order("orden");
-
-        if (!rondasError) {
-          ejercicio.rondas = rondasData;
-        }
-      }
-      entrenamiento.ejercicios = ejerciciosData.map((e) => ({
-        ...e,
-        nombre_ejercicio: e.ejercicios?.nombre,
-      }));
-    }
-
+    await loadExercisesWithRounds(entrenamiento);
     return entrenamiento;
   },
 
@@ -226,45 +190,7 @@ export const halterofiliaService = {
       await supabase.from("halterofilia_ejercicios").delete().eq("entrenamiento_id", id);
     }
 
-    if (ejercicios && ejercicios.length > 0) {
-      for (let i = 0; i < ejercicios.length; i++) {
-        const ejercicio = ejercicios[i];
-
-        const { data: ejercicioData, error: ejercicioError } = await supabase
-          .from("halterofilia_ejercicios")
-          .insert({
-            entrenamiento_id: id,
-            ejercicio_id: ejercicio.ejercicio_id,
-            orden: i,
-          })
-          .select()
-          .single();
-
-        if (ejercicioError) {
-          throw ejercicioError;
-        }
-
-        if (ejercicio.rondas && ejercicio.rondas.length > 0) {
-          const rondasData = ejercicio.rondas.map((ronda, j) => ({
-            ejercicio_entrenamiento_id: ejercicioData.id,
-            repeticiones: ronda.repeticiones,
-            series: ronda.series,
-            porcentaje: ronda.porcentaje,
-            peso: ronda.peso || null,
-            orden: j,
-          }));
-
-          const { error: rondasError } = await supabase
-            .from("halterofilia_rondas")
-            .insert(rondasData);
-
-          if (rondasError) {
-            throw rondasError;
-          }
-        }
-      }
-    }
-
+    await insertExercisesWithRounds(id, ejercicios);
     return { id, notas, ejercicios };
   },
 };

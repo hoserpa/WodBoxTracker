@@ -1,5 +1,11 @@
 const CACHE_NAME = "wodbox-__BUILD_VERSION__";
-const urlsToCache = ["./", "./index.html", "./manifest.json", "./icon.png"];
+const urlsToCache = [
+  "./",
+  "./index.html",
+  "./manifest.json",
+  "./icon.png",
+  "./data/wods.json",
+];
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();

@@ -38,13 +38,23 @@ const routes = [
   {
     path: "/benchmarks/principales",
     name: "BenchmarksPrincipales",
-    component: () => import("@/views/BenchmarksPrincipalesView.vue"),
+    component: () => import("@/views/BenchmarksListView.vue"),
+    props: {
+      tipo: "principal",
+      titulo: "Benchmarks Principales",
+      vacio: "No hay ejercicios principales",
+    },
     meta: { requiresAuth: true },
   },
   {
     path: "/benchmarks/secundarios",
     name: "BenchmarksSecundarios",
-    component: () => import("@/views/BenchmarksSecundariosView.vue"),
+    component: () => import("@/views/BenchmarksListView.vue"),
+    props: {
+      tipo: "secundario",
+      titulo: "Benchmarks Secundarios",
+      vacio: "No hay ejercicios secundarios",
+    },
     meta: { requiresAuth: true },
   },
   {

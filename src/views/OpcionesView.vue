@@ -1,7 +1,7 @@
 <script setup>
+import BackButton from "@/components/BackButton.vue";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { useQueryClient } from "@tanstack/vue-query";
 import { useAuthStore } from "@/stores/auth";
 import { diaCompletadoService } from "@/services/diaCompletado";
 import InstallPwaButton from "@/components/InstallPwaButton.vue";
@@ -9,7 +9,6 @@ import { mensajeAuthError } from "@/utils/authErrors";
 
 const router = useRouter();
 const authStore = useAuthStore();
-const queryClient = useQueryClient();
 
 const showChangePassword = ref(false);
 const newPassword = ref("");
@@ -18,9 +17,7 @@ const passwordLoading = ref(false);
 const passwordError = ref("");
 const passwordSuccess = ref(false);
 
-const goBack = () => {
-  router.push("/");
-};
+
 
 const changePassword = async () => {
   passwordError.value = "";
@@ -67,10 +64,7 @@ const resetDias = async () => {
   }
 };
 
-const reloadCache = async () => {
-  await queryClient.invalidateQueries();
-  window.alert("Cache recargado correctamente");
-};
+const reloadCache = () => { window.location.reload(); };
 </script>
 
 <template>
@@ -79,26 +73,7 @@ const reloadCache = async () => {
   >
     <header class="bg-white/10 backdrop-blur-md border-b border-white/10">
       <div class="px-4 py-5 flex items-center justify-between">
-        <button
-          @click="goBack"
-          class="text-violet-400 font-medium hover:text-violet-300 transition-colors flex items-center gap-2"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          Volver
-        </button>
+        <BackButton to="/" variant="violet" />
         <h1 class="text-xl font-bold text-white">Opciones</h1>
         <div class="w-16"></div>
       </div>
@@ -293,3 +268,9 @@ const reloadCache = async () => {
     </main>
   </div>
 </template>
+
+
+
+
+
+

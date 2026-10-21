@@ -10,8 +10,8 @@ npm run build        # Production build
 npm run preview      # Preview production build
 npm run lint         # ESLint check
 npm run lint:fix     # ESLint auto-fix
-npm run deploy       # Build and deploy to gh-pages
-npm install @tanstack/vue-query  # TanStack Query for caching/offline
+npm run build        # Production build (CI deploys to gh-pages via .github/workflows/deploy.yml)
+node scripts/parse-wods.mjs  # Regenerate public/data/wods.json from wods.txt
 ```
 
 **Testing** - Vitest NOT installed. Add:
@@ -27,7 +27,7 @@ Run single test: `npx vitest run src/components/__tests__/MyComponent.test.js`
 
 ## Code Style
 
-- Language: JavaScript (no TypeScript), ESLint + Prettier, 2 spaces, semicolons, single quotes
+- Language: JavaScript (no TypeScript), ESLint, 2 spaces, semicolons, single quotes
 - Use Composition API with `<script setup>`
 
 ### Imports (group order)
@@ -97,7 +97,7 @@ export const useAuthStore = defineStore("auth", () => {
   const user = ref(null),
     session = ref(null);
   const isAuthenticated = computed(() => !!user.value);
-  const initialize = async () => {
+  const initAuth = async () => {
     const { data } = await supabase.auth.getSession();
     session.value = data.session;
     user.value = data.session?.user ?? null;
@@ -116,70 +116,39 @@ export const useAuthStore = defineStore("auth", () => {
     user.value = null;
     session.value = null;
   };
-  return { user, session, isAuthenticated, initialize, signIn, signOut };
+  return { user, session, isAuthenticated, initAuth, signIn, signOut };
 });
 ```
 
 ## In components: `const { user, isAuthenticated } = storeToRefs(authStore);`
 
-## TanStack Query (Vue Query)
+## Composables (src/composables/)
 
-Caching and offline support. Configured in main.js with `offlineFirst` mode.
-
-### Setup (main.js)
+Plain `ref` + `try/catch/finally`, no query library. Fetch the WOD catalog once
+and share the promise:
 
 ```js
-import { VueQueryPlugin } from "@tanstack/vue-query";
-const queryClient = new VueQueryPlugin.QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5,
-      gcTime: 1000 * 60 * 60,
-      networkMode: "offlineFirst",
+// src/composables/useWodDelDia.js
+let catalogoPromise = null;
+const cargarCatalogo = () => {
+  catalogoPromise ??= fetch(`${import.meta.env.BASE_URL}data/wods.json`).then(
+    (res) => {
+      if (!res.ok) throw new Error("No se pudo cargar el catálogo de WODs");
+      return res.json();
     },
-    mutations: { networkMode: "offlineFirst" },
-  },
-});
-app.use(VueQueryPlugin, { queryClient });
+  );
+  return catalogoPromise;
+};
 ```
 
-### Composables (src/composables/useRutina.js)
+The WOD catalog lives in `public/data/wods.json` (not bundled) and is precached
+by `public/sw.js`.
 
-```js
-import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
-import { rutinaService } from "@/services/rutina";
+## Shared components
 
-export function useRutinas() {
-  return useQuery({
-    queryKey: ["rutinas"],
-    queryFn: () => rutinaService.getAll(),
-  });
-}
-
-export function useRutina(id) {
-  return useQuery({
-    queryKey: ["rutina", id],
-    queryFn: () => rutinaService.getById(id),
-    enabled: !!id,
-  });
-}
-
-export function useCreateRutina() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data) => rutinaService.create(data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["rutinas"] }),
-  });
-}
-```
-
-### Usage in components
-
-```js
-const { data: rutinas, isLoading, error } = useRutinas();
-const createRutina = useCreateRutina();
-await createRutina.mutateAsync({ nombre: "Nueva Rutina" });
-```
+- `AppHeader.vue` — logo + options button (`showSettings` prop)
+- `BackButton.vue` — back link; `to` (route) or `fallback` (fn), `variant="violet"`
+- `RoundStepper.vue` — round counter; emits `change` with `{ campo, valor }`
 
 ## TailwindCSS
 
@@ -234,8 +203,9 @@ src/
 ├── main.js, App.vue, router/index.js
 ├── views/           # Page components
 ├── components/      # Reusable components
-├── composables/     # TanStack Query composables (useRutina.js)
+├── composables/     # Data-loading composables (useWodDelDia.js)
 ├── stores/          # Pinia stores
 ├── services/        # Supabase data layer
+├── utils/           # Pure helpers (wodFormatter.js, rpeCalculator.js)
 └── lib/supabase.js  # Supabase client
 ```

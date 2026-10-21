@@ -16,6 +16,25 @@ export function extraerRPE(observaciones) {
   return match ? parseInt(match[1], 10) : null;
 }
 
+function interpolateBy(key, value) {
+  let lower = rpeTable[0];
+  let upper = rpeTable[rpeTable.length - 1];
+
+  for (let i = 0; i < rpeTable.length - 1; i++) {
+    if (value >= rpeTable[i][key] && value <= rpeTable[i + 1][key]) {
+      lower = rpeTable[i];
+      upper = rpeTable[i + 1];
+      break;
+    }
+  }
+
+  if (lower[key] === upper[key]) {
+    return lower.percentage;
+  }
+  const ratio = (value - lower[key]) / (upper[key] - lower[key]);
+  return lower.percentage + ratio * (upper.percentage - lower.percentage);
+}
+
 export function calcularPesoSugerido(rm, repeticiones, rpe) {
   if (!rm || !repeticiones || !rpe) return null;
 
@@ -25,46 +44,8 @@ export function calcularPesoSugerido(rm, repeticiones, rpe) {
   const targetRpe = parseFloat(rpe);
   if (isNaN(targetRpe) || targetRpe < 6 || targetRpe > 10) return null;
 
-  let lower = rpeTable[0];
-  let upper = rpeTable[rpeTable.length - 1];
-
-  for (let i = 0; i < rpeTable.length - 1; i++) {
-    if (targetRpe >= rpeTable[i].rpe && targetRpe <= rpeTable[i + 1].rpe) {
-      lower = rpeTable[i];
-      upper = rpeTable[i + 1];
-      break;
-    }
-  }
-
-  let percentage;
-  if (lower.rpe === upper.rpe) {
-    percentage = lower.percentage;
-  } else {
-    const ratio = (targetRpe - lower.rpe) / (upper.rpe - lower.rpe);
-    percentage =
-      lower.percentage + ratio * (upper.percentage - lower.percentage);
-  }
-
-  let repsLower = rpeTable[0];
-  let repsUpper = rpeTable[rpeTable.length - 1];
-
-  for (let i = 0; i < rpeTable.length - 1; i++) {
-    if (reps >= rpeTable[i].reps && reps <= rpeTable[i + 1].reps) {
-      repsLower = rpeTable[i];
-      repsUpper = rpeTable[i + 1];
-      break;
-    }
-  }
-
-  let repsPercentage;
-  if (repsLower.reps === repsUpper.reps) {
-    repsPercentage = repsLower.percentage;
-  } else {
-    const ratio = (reps - repsLower.reps) / (repsUpper.reps - repsLower.reps);
-    repsPercentage =
-      repsLower.percentage +
-      ratio * (repsUpper.percentage - repsLower.percentage);
-  }
+  const percentage = interpolateBy("rpe", targetRpe);
+  const repsPercentage = interpolateBy("reps", reps);
 
   const finalPercentage = (percentage * repsPercentage) / 100;
   const pesoSugerido = (rm * finalPercentage) / 100;

@@ -1,0 +1,9 @@
+@font-face {
+  font-family: 'DSEG7-Classic';
+  src: url('./DSEG7Classic-BoldItalic.woff2') format('woff2'),
+       url('./DSEG7Classic-BoldItalic.woff') format('woff'),
+       url('./DSEG7Classic-BoldItalic.ttf') format('truetype');
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}

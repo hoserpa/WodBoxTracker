@@ -1,4 +1,6 @@
 <script setup>
+import AppHeader from "@/components/AppHeader.vue";
+import BackButton from "@/components/BackButton.vue";
 /* global confirm setTimeout */
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
@@ -18,9 +20,7 @@ const fechaInicio = ref("");
 const fechaFin = ref("");
 const entrenamientos = ref([]);
 
-const goBack = () => {
-  router.push("/halterofilia");
-};
+
 
 const formatearFecha = (fecha) => {
   if (!fecha) return "";
@@ -103,44 +103,10 @@ onMounted(async () => {
   <div
     class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
   >
-    <header class="bg-white/10 backdrop-blur-md border-b border-white/10">
-      <div class="max-w-7xl mx-auto py-5 px-4">
-        <h1 class="text-2xl font-bold text-white flex items-center gap-3">
-          <img
-            src="/icon.png"
-            alt="WodBox"
-            class="h-10 w-10 rounded-xl shadow-lg"
-          />
-          <span
-            class="bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent"
-          >
-            Box Tracker
-          </span>
-        </h1>
-      </div>
-    </header>
+    <AppHeader :show-settings="false" />
 
     <main class="max-w-7xl mx-auto py-8 px-4">
-      <button
-        @click="goBack"
-        class="flex items-center gap-2 text-white/60 hover:text-white mb-6 transition-colors"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M15 19l-7-7 7-7"
-          />
-        </svg>
-        Volver
-      </button>
+      <BackButton to="/halterofilia" class="mb-6" />
 
       <div class="flex items-center gap-3 mb-8">
         <div
@@ -287,3 +253,9 @@ onMounted(async () => {
     </main>
   </div>
 </template>
+
+
+
+
+
+

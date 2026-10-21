@@ -1,4 +1,5 @@
 <script setup>
+import BackButton from "@/components/BackButton.vue";
 import { onMounted, ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { rutinaService } from "@/services/rutina";
@@ -11,6 +12,7 @@ const router = useRouter();
 
 const rutinaId = computed(() => route.params.rutinaId);
 const semanaId = computed(() => route.params.semanaId);
+const rutaRutina = computed(() => `/rutina/${rutinaId.value}`);
 const rutina = ref(null);
 const semana = ref(null);
 const dias = ref([]);
@@ -53,9 +55,7 @@ const selectDia = (diaId) => {
   );
 };
 
-const goBack = () => {
-  router.push(`/rutina/${rutinaId.value}`);
-};
+
 
 const getDiaGradient = (index) => {
   const gradients = [
@@ -78,26 +78,7 @@ const getDiaGradient = (index) => {
   >
     <header class="bg-white/10 backdrop-blur-md border-b border-white/10">
       <div class="px-4 py-5">
-        <button
-          @click="goBack"
-          class="text-violet-400 font-medium hover:text-violet-300 transition-colors flex items-center gap-2 mb-3"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          Volver
-        </button>
+        <BackButton :to="rutaRutina" variant="violet" class="mb-3" />
         <h1 class="text-2xl font-bold text-white">{{ rutina?.nombre }}</h1>
         <p class="text-violet-400 text-sm mt-1">Semana {{ semana?.numero }}</p>
       </div>
@@ -201,3 +182,8 @@ const getDiaGradient = (index) => {
     </main>
   </div>
 </template>
+
+
+
+
+

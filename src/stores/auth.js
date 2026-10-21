@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { supabase } from '@/lib/supabase'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -7,25 +7,33 @@ export const useAuthStore = defineStore('auth', () => {
   const session = ref(null)
   const isRecoveryMode = ref(false)
   let _unsubscribe = null
-
-  const isAuthenticated = computed(() => !!user.value)
+  let _initPromise = null
 
   const initAuth = async () => {
-    const { data } = await supabase.auth.getSession()
-    session.value = data.session
-    user.value = data.session?.user ?? null
+    _initPromise ??= (async () => {
+      const { data, error } = await supabase.auth.getSession()
+      if (error) throw error
 
-    const { data: listenerData } = supabase.auth.onAuthStateChange(
-      (event, _session) => {
-        session.value = _session
-        user.value = _session?.user ?? null
+      session.value = data.session
+      user.value = data.session?.user ?? null
 
-        if (event === 'PASSWORD_RECOVERY') {
-          isRecoveryMode.value = true
-        }
-      },
-    )
-    _unsubscribe = listenerData?.subscription?.unsubscribe ?? null
+      const { data: listenerData } = supabase.auth.onAuthStateChange(
+        (event, _session) => {
+          session.value = _session
+          user.value = _session?.user ?? null
+
+          if (event === 'PASSWORD_RECOVERY') {
+            isRecoveryMode.value = true
+          }
+        },
+      )
+      _unsubscribe = listenerData?.subscription?.unsubscribe ?? null
+    })().catch((err) => {
+      _initPromise = null
+      console.error('Error al inicializar la sesión:', err)
+    })
+
+    return _initPromise
   }
 
   const cleanup = () => {
@@ -37,15 +45,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   const signIn = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    if (error) throw error
-    return data
-  }
-
-  const signUp = async (email, password) => {
-    const { data, error } = await supabase.auth.signUp({
       email,
       password,
     })
@@ -75,12 +74,10 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     user,
     session,
-    isAuthenticated,
     isRecoveryMode,
     initAuth,
     cleanup,
     signIn,
-    signUp,
     signOut,
     resetPassword,
     updatePassword,

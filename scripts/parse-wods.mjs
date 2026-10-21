@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const SRC = path.join(ROOT, "wods.txt");
-const OUT_DIR = path.join(ROOT, "src", "data");
+const OUT_DIR = path.join(ROOT, "public", "data");
 const OUT_FILE = path.join(OUT_DIR, "wods.json");
 
 const num = (v) => parseInt(v, 10);
@@ -511,10 +511,7 @@ async function main() {
   );
 
   mkdirSync(OUT_DIR, { recursive: true });
-  let json = JSON.stringify(wods, null, 2);
-  if (Buffer.byteLength(json, "utf8") > 15 * 1024 * 1024) {
-    json = JSON.stringify(wods);
-  }
+  const json = JSON.stringify(wods);
   writeFileSync(OUT_FILE, json, "utf8");
 
   console.log(`WODs en txt (separadores '|'): ${separatorCount}`);

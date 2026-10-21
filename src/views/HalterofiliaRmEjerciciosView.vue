@@ -1,13 +1,13 @@
 <script setup>
+import AppHeader from "@/components/AppHeader.vue";
+import BackButton from "@/components/BackButton.vue";
 /* global setTimeout confirm */
 import { ref, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
 import { userRmService } from "@/services/user_rm";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores/auth";
 import { storeToRefs } from "pinia";
 
-const router = useRouter();
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 const ejercicios = ref([]);
@@ -28,13 +28,9 @@ const puedeBorrarEjercicio = (ejercicio) => {
   return puedeBorrar.value;
 };
 
-const goToOpciones = () => {
-  router.push("/opciones");
-};
 
-const goBack = () => {
-  router.push("/halterofilia");
-};
+
+
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "";
@@ -148,71 +144,9 @@ onMounted(async () => {
   <div
     class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
   >
-    <header class="bg-white/10 backdrop-blur-md border-b border-white/10">
-      <div
-        class="max-w-7xl mx-auto py-5 px-4 flex justify-between items-center"
-      >
-        <h1 class="text-2xl font-bold text-white flex items-center gap-3">
-          <img
-            src="/icon.png"
-            alt="WodBox"
-            class="h-10 w-10 rounded-xl shadow-lg"
-          />
-          <span
-            class="bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent"
-          >
-            Box Tracker
-          </span>
-        </h1>
-        <button
-          @click="goToOpciones"
-          class="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-all duration-300"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6 text-white"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-            />
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-          </svg>
-        </button>
-      </div>
-    </header>
-
+    <AppHeader />
     <main class="max-w-7xl mx-auto py-8 px-4">
-      <button
-        @click="goBack"
-        class="flex items-center gap-2 text-white/60 hover:text-white mb-6 transition-colors"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M15 19l-7-7 7-7"
-          />
-        </svg>
-        Volver
-      </button>
+      <BackButton to="/halterofilia" class="mb-6" />
 
       <div class="flex items-center gap-3 mb-8">
         <div
@@ -335,3 +269,11 @@ onMounted(async () => {
     </main>
   </div>
 </template>
+
+
+
+
+
+
+
+

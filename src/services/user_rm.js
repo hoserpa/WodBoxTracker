@@ -2,19 +2,6 @@ import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores/auth";
 
 export const userRmService = {
-  async getByUser () {
-    const authStore = useAuthStore();
-    const userId = authStore.user?.id;
-
-    const { data, error } = await supabase
-      .from("user_rm")
-      .select("*")
-      .eq("user_id", userId)
-      .order("fecha", { ascending: false });
-
-    if (error) throw error;
-    return data;
-  },
 
   async getMapByEjercicioIds (ejercicioIds) {
     const authStore = useAuthStore();

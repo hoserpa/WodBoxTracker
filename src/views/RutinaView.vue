@@ -3,8 +3,9 @@ import { onMounted, ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { rutinaService } from "@/services/rutina";
 import { semanaService } from "@/services/semana";
-import { diaCompletadoService } from "@/services/diaCompletado";
 import { diaService } from "@/services/dia";
+import { diaCompletadoService } from "@/services/diaCompletado";
+import BackButton from "@/components/BackButton.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -57,9 +58,6 @@ const loadData = async () => {
 
     semanasData.forEach((s) => {
       const diasEnSemana = diasPorSemanaCount[s.numero] || 0;
-      console.log(
-        `Semana ${s.numero}: ${completadosPorSemana[s.numero] || 0} completados, ${diasEnSemana} días en total`
-      );
       if (
         completadosPorSemana[s.numero] === diasEnSemana &&
         diasEnSemana > 0
@@ -79,9 +77,7 @@ const selectSemana = (semanaId) => {
   router.push(`/rutina/${rutinaId.value}/semana/${semanaId}`);
 };
 
-const goBack = () => {
-  router.push("/");
-};
+
 
 const getSemanaGradient = (index) => {
   const gradients = [
@@ -104,26 +100,7 @@ const getSemanaGradient = (index) => {
   >
     <header class="bg-white/10 backdrop-blur-md border-b border-white/10">
       <div class="px-4 py-5">
-        <button
-          @click="goBack"
-          class="text-violet-400 font-medium hover:text-violet-300 transition-colors flex items-center gap-2 mb-3"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          Volver
-        </button>
+        <BackButton to="/" variant="violet" class="mb-3" />
         <h1 class="text-2xl font-bold text-white">{{ rutina?.nombre }}</h1>
         <p class="text-white/60 text-sm mt-1">Selecciona una semana</p>
       </div>
@@ -227,3 +204,5 @@ const getSemanaGradient = (index) => {
     </main>
   </div>
 </template>
+
+

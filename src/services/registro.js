@@ -1,18 +1,6 @@
 import { supabase } from "@/lib/supabase";
 
 export const registroService = {
-  async getBySerie(serieId) {
-    const { data, error } = await supabase
-      .from("registros")
-      .select("*")
-      .eq("serie_id", serieId)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
-
-    if (error && error.code !== "PGRST116") throw error;
-    return data;
-  },
 
   async getBySeries(serieIds) {
     const { data, error } = await supabase

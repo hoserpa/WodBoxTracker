@@ -4,7 +4,7 @@ import { useRouter } from "vue-router";
 import { useWodDelDia } from "@/composables/useWodDelDia";
 import { useCronometro } from "@/composables/useCronometro";
 import { formatWodTipo, formatWodSecciones } from "@/utils/wodFormatter";
-import "dseg/css/dseg.css";
+import "@/assets/fonts/dseg.css";
 
 const router = useRouter();
 const { wod, isLoading, error } = useWodDelDia();
@@ -180,3 +180,4 @@ const volver = () => router.push("/");
     0 0 45px rgba(239, 68, 68, 0.25);
 }
 </style>
+

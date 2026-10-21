@@ -1,25 +1,43 @@
-import { computed } from "vue";
-import { useQuery } from "@tanstack/vue-query";
+import { ref } from "vue";
 import { supabase } from "@/lib/supabase";
-import wodsData from "@/data/wods.json";
+
+const CATALOGO_URL = `${import.meta.env.BASE_URL}data/wods.json`;
+
+let catalogoPromise = null;
+
+const cargarCatalogo = () => {
+  catalogoPromise ??= fetch(CATALOGO_URL).then((res) => {
+    if (!res.ok) throw new Error("No se pudo cargar el catálogo de WODs");
+    return res.json();
+  });
+  return catalogoPromise;
+};
 
 export function useWodDelDia() {
-  const query = useQuery({
-    queryKey: ["wod-del-dia"],
-    queryFn: async () => {
-      const { data, error: rpcError } = await supabase.rpc("obtener_wod_del_dia");
+  const wod = ref(null);
+  const isLoading = ref(true);
+  const error = ref(null);
+
+  const load = async () => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+      const [{ data, error: rpcError }, catalogo] = await Promise.all([
+        supabase.rpc("obtener_wod_del_dia"),
+        cargarCatalogo(),
+      ]);
       if (rpcError) throw rpcError;
       const row = Array.isArray(data) ? data[0] : data;
       if (!row) throw new Error("El WOD del día no está disponible");
-      return Number(row.wod_elegido);
-    },
-    staleTime: 1000 * 60 * 30,
-  });
+      const id = Number(row.wod_elegido);
+      wod.value = catalogo.find((w) => w.id === id) ?? null;
+    } catch (err) {
+      error.value = err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
 
-  const wod = computed(() => {
-    if (query.data.value == null) return null;
-    return wodsData.find((w) => w.id === query.data.value) ?? null;
-  });
-
-  return { wod, isLoading: query.isLoading, error: query.error };
+  load();
+  return { wod, isLoading, error };
 }

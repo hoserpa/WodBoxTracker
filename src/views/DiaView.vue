@@ -10,6 +10,7 @@ import { diaCompletadoService } from "@/services/diaCompletado";
 import { userRmService } from "@/services/user_rm";
 import { extraerRPE, calcularPesoSugerido } from "@/utils/rpeCalculator";
 import ExerciseDetailModal from "@/components/ExerciseDetailModal.vue";
+import BackButton from "@/components/BackButton.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -61,25 +62,17 @@ const ejerciciosPorTipo = computed(() => {
   tiposEnDia.value.forEach((tipo) => {
     let seriesTipo = allSeries.filter((s) => s.tipo_ejercicio === tipo);
 
+    const esContraste = (s) =>
+      (s.observaciones && s.observaciones.toLowerCase().includes("contraste")) ||
+      (s.ejercicio?.nombre && /BOX JUMP|W\.BALL|KB SWING RUSO|BAND ASSISTED PUSH UP/i.test(s.ejercicio.nombre));
+
     if (tipo === "principal") {
-      const contrastes = allSeries.filter(
-        (s) =>
-          ((s.observaciones && s.observaciones.toLowerCase().includes("contraste")) ||
-            (s.ejercicio?.nombre && /BOX JUMP|W\.BALL|KB SWING RUSO|BAND ASSISTED PUSH UP/i.test(s.ejercicio.nombre)))
-      );
+      const contrastes = allSeries.filter(esContraste);
       seriesTipo = [...seriesTipo, ...contrastes].sort((a, b) => a.orden - b.orden);
     } else if (tipo === "calentamiento") {
-      seriesTipo = seriesTipo.filter(
-        (s) =>
-          !(s.observaciones && s.observaciones.toLowerCase().includes("contraste")) &&
-          !(s.ejercicio?.nombre && /BOX JUMP|W\.BALL|KB SWING RUSO|BAND ASSISTED PUSH UP/i.test(s.ejercicio.nombre))
-      );
+      seriesTipo = seriesTipo.filter((s) => !esContraste(s));
     } else if (tipo === "pliometria") {
-      seriesTipo = seriesTipo.filter(
-        (s) =>
-          !(s.observaciones && s.observaciones.toLowerCase().includes("contraste")) &&
-          !(s.ejercicio?.nombre && /BOX JUMP|W\.BALL|KB SWING RUSO|BAND ASSISTED PUSH UP/i.test(s.ejercicio.nombre))
-      );
+      seriesTipo = seriesTipo.filter((s) => !esContraste(s));
     }
 
     const ejercicioArray = [];
@@ -215,26 +208,7 @@ const toggleCompletado = async () => {
       class="bg-white/10 backdrop-blur-md border-b border-white/10 sticky top-0 z-20"
     >
       <div class="px-4 py-4">
-        <button
-          @click="goBack"
-          class="text-violet-400 font-medium hover:text-violet-300 transition-colors flex items-center gap-2 mb-3"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          Volver
-        </button>
+        <BackButton :fallback="goBack" variant="violet" class="mb-3" />
         <div class="flex items-center justify-between">
           <div>
             <h1 class="text-xl font-bold text-white">
@@ -470,3 +444,5 @@ const toggleCompletado = async () => {
     />
   </div>
 </template>
+
+
