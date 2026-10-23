@@ -280,9 +280,7 @@ BEGIN
     (v_dia, pg_temp.get_ej('SINGLE UNDERS', 'pliometria', v_user), 1, '50', 'SU 50', 'pliometria', 6),
     (v_dia, pg_temp.get_ej('DROP JUMP', 'pliometria', v_user), 3, '5', NULL, 'pliometria', 7),
     (v_dia, pg_temp.get_ej('BROAD JUMP', 'pliometria', v_user), 3, '4', NULL, 'pliometria', 8),
-    (v_dia, pg_temp.get_ej('DL', 'principal', v_user), 5, '3-3-3-2-2', 'Tempo 2-0-X-1 | RPE6 x1, RPE7 x2, RPE8 x2 | + KB SWING + BROAD JUMP | + CONTRASTE 5 + CONTRASTE 3', 'principal', 9),
-    (v_dia, pg_temp.get_ej('KB SWING RUSO', 'calentamiento', v_user), 1, '5', 'Contraste', 'calentamiento', 10),
-    (v_dia, pg_temp.get_ej('BROAD JUMP', 'pliometria', v_user), 1, '3', 'Contraste', 'pliometria', 11),
+    (v_dia, pg_temp.get_ej('DL', 'principal', v_user), 5, '3-3-3-2-2', 'Tempo 2-0-X-1 | RPE6 x1, RPE7 x2, RPE8 x2', 'principal', 9),
     (v_dia, pg_temp.get_ej('PULL UP', 'principal', v_user), 4, '4', 'Tempo 2-0-X-1 | RIR4 RPE6 x1, RIR3 RPE7 x1, RIR2 RPE8 x2', 'principal', 12),
     (v_dia, pg_temp.get_ej('BAR ROW', 'secundario', v_user), 3, '4', 'Tempo 2-1-X-1 | RIR4 RPE6 x1, RIR3 RPE7 x1, RIR2 RPE8 x1', 'secundario', 13),
     (v_dia, pg_temp.get_ej('ONE LEG ISQUIO SLIDER ECCENTRIC', 'secundario', v_user), 3, '5', 'Tempo 3-0-X-1 | X2', 'secundario', 14);

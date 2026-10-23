@@ -63,8 +63,8 @@ const ejerciciosPorTipo = computed(() => {
     let seriesTipo = allSeries.filter((s) => s.tipo_ejercicio === tipo);
 
     const esContraste = (s) =>
-      (s.observaciones && s.observaciones.toLowerCase().includes("contraste")) ||
-      (s.ejercicio?.nombre && /BOX JUMP|W\.BALL|KB SWING RUSO|BAND ASSISTED PUSH UP/i.test(s.ejercicio.nombre));
+      s.tipo_ejercicio !== "principal" &&
+      !!s.observaciones?.toLowerCase().includes("contraste");
 
     if (tipo === "principal") {
       const contrastes = allSeries.filter(esContraste);
