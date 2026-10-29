@@ -3,7 +3,7 @@ import AppHeader from "@/components/AppHeader.vue";
 import BackButton from "@/components/BackButton.vue";
 import RoundStepper from "@/components/RoundStepper.vue";
 /* global setTimeout */
-import { ref, onMounted } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { userRmService } from "@/services/user_rm";
 import { halterofiliaService } from "@/services/halterofilia_entrenamiento";
@@ -35,6 +35,31 @@ const notas = ref("");
 const mensajeExito = ref("");
 const fecha = ref("");
 
+const resultadoGeneral = computed(() => {
+  if (!ejercicioActual.value) return 0;
+  const peso = Number(ejercicioActual.value.pesoGeneral);
+  const porcentaje = Number(ejercicioActual.value.porcentajeGeneral);
+  if (!peso || !porcentaje) return 0;
+  return parseFloat(((peso * porcentaje) / 100).toFixed(1));
+});
+
+const puedeConfirmarEjercicio = computed(() => {
+  if (!ejercicioActual.value || ejercicioActual.value.rondas.length === 0) return false;
+  return editMode.value || resultadoGeneral.value > 0;
+});
+
+const ajustarGeneral = (campo, delta, min, max) => {
+  if (!ejercicioActual.value) return;
+  const valor = (Number(ejercicioActual.value[campo]) || 0) + delta;
+  if (valor < min || valor > max) return;
+  ejercicioActual.value[campo] = campo === "pesoGeneral" ? parseFloat(valor.toFixed(1)) : valor;
+};
+
+const calcularPesoConBase = (base, porcentaje) => {
+  if (!base || !porcentaje) return 0;
+  return parseFloat(((base * porcentaje) / 100).toFixed(1));
+};
+
 const getRmPorEjercicio = (ejercicioId) => {
   const ejercicio = ejercicios.value.find((e) => e.id === ejercicioId);
   return ejercicio?.rm || null;
@@ -60,6 +85,8 @@ const añadirEjercicio = () => {
     ejercicio_id: ejercicioSeleccionado.value,
     nombre_ejercicio: ejercicio?.nombre,
     rm: ejercicio?.rm,
+    pesoGeneral: ejercicio?.rm ?? null,
+    porcentajeGeneral: 100,
     rondas: [],
   };
 
@@ -70,13 +97,14 @@ const añadirRondas = () => {
   if (!ejercicioActual.value) return;
 
   const num = parseInt(numRondas.value) || 1;
+  const base = resultadoGeneral.value || ejercicioActual.value.rm || 0;
 
   for (let i = 0; i < num; i++) {
     ejercicioActual.value.rondas.push({
       repeticiones: 1,
       series: 1,
       porcentaje: 50,
-      peso: calcularPeso(ejercicioActual.value.ejercicio_id, 50),
+      peso: calcularPesoConBase(base, 50),
     });
   }
 
@@ -86,10 +114,19 @@ const añadirRondas = () => {
 const aplicarCambio = (ronda, { campo, valor }, ejercicioId = null) => {
   ronda[campo] = valor;
   if (campo === "porcentaje") {
-    const id = ejercicioId ?? ejercicioActual.value?.ejercicio_id;
-    ronda.peso = id ? calcularPeso(id, valor) : 0;
+    const base = editMode.value
+      ? getRmPorEjercicio(ejercicioId)
+      : resultadoGeneral.value || ejercicioActual.value?.rm || 0;
+    ronda.peso = calcularPesoConBase(base, valor);
   }
 };
+
+watch(resultadoGeneral, (base) => {
+  if (editMode.value || !ejercicioActual.value) return;
+  ejercicioActual.value.rondas.forEach((ronda) => {
+    ronda.peso = calcularPesoConBase(base, ronda.porcentaje);
+  });
+});
 
 const eliminarRonda = (index) => {
   ejercicioActual.value.rondas.splice(index, 1);
@@ -312,6 +349,70 @@ onMounted(async () => {
               </div>
             </div>
 
+            <div v-if="!editMode" class="space-y-3">
+              <h4 class="text-white font-medium">Cálculo de peso base</h4>
+              <div class="grid grid-cols-3 gap-2">
+                <div>
+                  <label class="block text-white/60 text-xs text-center mb-1">
+                    Peso general
+                  </label>
+                  <div class="flex items-center justify-center gap-1">
+                    <button
+                      @click="ajustarGeneral('pesoGeneral', -0.5, 0, Infinity)"
+                      :disabled="!ejercicioActual.pesoGeneral"
+                      class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      -
+                    </button>
+                    <span class="w-12 text-center text-white font-medium">
+                      {{ ejercicioActual.pesoGeneral ?? 0 }}
+                    </span>
+                    <button
+                      @click="ajustarGeneral('pesoGeneral', 0.5, 0, Infinity)"
+                      class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-white/60 text-xs text-center mb-1">
+                    Porcentaje
+                  </label>
+                  <div class="flex items-center justify-center gap-1">
+                    <button
+                      @click="ajustarGeneral('porcentajeGeneral', -5, 0, 100)"
+                      :disabled="!ejercicioActual.porcentajeGeneral"
+                      class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      -
+                    </button>
+                    <span class="w-12 text-center text-white font-medium">
+                      {{ ejercicioActual.porcentajeGeneral ?? 0 }}%
+                    </span>
+                    <button
+                      @click="ajustarGeneral('porcentajeGeneral', 5, 0, 100)"
+                      :disabled="ejercicioActual.porcentajeGeneral >= 100"
+                      class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-white/60 text-xs text-center mb-1">
+                    Resultado
+                  </label>
+                  <div class="h-8 flex items-center justify-center text-amber-300 font-medium">
+                    {{ resultadoGeneral }} kg
+                  </div>
+                </div>
+              </div>
+              <p class="text-white/50 text-xs">
+                Los porcentajes de las rondas se calculan sobre este resultado.
+              </p>
+            </div>
+
             <button
               @click="añadirRondas"
               class="w-full px-4 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg transition-colors"
@@ -359,7 +460,8 @@ onMounted(async () => {
             <div class="flex gap-3 mt-6">
               <button
                 @click="confirmarEjercicio"
-                class="flex-1 px-4 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg transition-colors"
+                :disabled="!puedeConfirmarEjercicio"
+                class="flex-1 px-4 py-3 bg-green-500 hover:bg-green-600 disabled:bg-green-500/50 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-colors"
               >
                 Confirmar Ejercicio
               </button>
